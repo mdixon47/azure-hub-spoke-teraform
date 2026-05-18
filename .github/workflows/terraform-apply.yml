@@ -51,29 +51,43 @@ jobs:
             --account-name "${{ vars.TFSTATE_SA }}" \
             --ip-address "${{ steps.runner-ip.outputs.ip }}" \
             --output none
-          for i in $(seq 1 24); do
+          required=3
+          streak=0
+          for i in $(seq 1 36); do
             if az storage blob list \
                  --auth-mode login \
                  --account-name "${{ vars.TFSTATE_SA }}" \
                  --container-name "${{ vars.TFSTATE_CONTAINER }}" \
                  --num-results 1 -o none 2>/dev/null; then
-              echo "firewall+RBAC ready after $((i*5))s"
-              exit 0
+              streak=$((streak + 1))
+              echo "probe $i: ok (streak=$streak/$required)"
+              [ "$streak" -ge "$required" ] && { echo "firewall+RBAC stable after $((i*5))s"; exit 0; }
+            else
+              streak=0
+              echo "probe $i: fail (streak reset)"
             fi
             sleep 5
           done
-          echo "::error::SA firewall did not propagate within 120s"
+          echo "::error::SA firewall did not stabilise within 180s"
           exit 1
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ env.TF_VERSION }}
       - name: terraform init
         run: |
-          terraform init \
-            -backend-config="resource_group_name=${{ vars.TFSTATE_RG }}" \
-            -backend-config="storage_account_name=${{ vars.TFSTATE_SA }}" \
-            -backend-config="container_name=${{ vars.TFSTATE_CONTAINER }}" \
-            -backend-config="key=${{ inputs.environment }}.terraform.tfstate"
+          for attempt in 1 2 3; do
+            if terraform init \
+                 -backend-config="resource_group_name=${{ vars.TFSTATE_RG }}" \
+                 -backend-config="storage_account_name=${{ vars.TFSTATE_SA }}" \
+                 -backend-config="container_name=${{ vars.TFSTATE_CONTAINER }}" \
+                 -backend-config="key=${{ inputs.environment }}.terraform.tfstate"; then
+              exit 0
+            fi
+            echo "terraform init attempt $attempt failed; waiting 15s"
+            sleep 15
+          done
+          echo "::error::terraform init failed after 3 attempts"
+          exit 1
       - name: terraform plan
         env:
           TF_VAR_vm_admin_password: ${{ secrets.VM_ADMIN_PASSWORD }}
@@ -129,18 +143,24 @@ jobs:
             --account-name "${{ vars.TFSTATE_SA }}" \
             --ip-address "${{ steps.runner-ip.outputs.ip }}" \
             --output none
-          for i in $(seq 1 24); do
+          required=3
+          streak=0
+          for i in $(seq 1 36); do
             if az storage blob list \
                  --auth-mode login \
                  --account-name "${{ vars.TFSTATE_SA }}" \
                  --container-name "${{ vars.TFSTATE_CONTAINER }}" \
                  --num-results 1 -o none 2>/dev/null; then
-              echo "firewall+RBAC ready after $((i*5))s"
-              exit 0
+              streak=$((streak + 1))
+              echo "probe $i: ok (streak=$streak/$required)"
+              [ "$streak" -ge "$required" ] && { echo "firewall+RBAC stable after $((i*5))s"; exit 0; }
+            else
+              streak=0
+              echo "probe $i: fail (streak reset)"
             fi
             sleep 5
           done
-          echo "::error::SA firewall did not propagate within 120s"
+          echo "::error::SA firewall did not stabilise within 180s"
           exit 1
       - uses: hashicorp/setup-terraform@v4
         with:
@@ -150,11 +170,19 @@ jobs:
           name: ${{ needs.plan.outputs.plan-artifact }}
       - name: terraform init
         run: |
-          terraform init \
-            -backend-config="resource_group_name=${{ vars.TFSTATE_RG }}" \
-            -backend-config="storage_account_name=${{ vars.TFSTATE_SA }}" \
-            -backend-config="container_name=${{ vars.TFSTATE_CONTAINER }}" \
-            -backend-config="key=${{ inputs.environment }}.terraform.tfstate"
+          for attempt in 1 2 3; do
+            if terraform init \
+                 -backend-config="resource_group_name=${{ vars.TFSTATE_RG }}" \
+                 -backend-config="storage_account_name=${{ vars.TFSTATE_SA }}" \
+                 -backend-config="container_name=${{ vars.TFSTATE_CONTAINER }}" \
+                 -backend-config="key=${{ inputs.environment }}.terraform.tfstate"; then
+              exit 0
+            fi
+            echo "terraform init attempt $attempt failed; waiting 15s"
+            sleep 15
+          done
+          echo "::error::terraform init failed after 3 attempts"
+          exit 1
       - name: terraform apply
         run: terraform apply -input=false -no-color tfplan
       - name: Remove runner IP from state SA firewall
