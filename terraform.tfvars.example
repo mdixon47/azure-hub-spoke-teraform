@@ -25,6 +25,19 @@ app_vm_size = "Standard_B2s"
 log_retention_days    = 30
 enable_resource_locks = false
 
+# HTTPS / Key Vault -----------------------------------------------------------
+# When enable_https = true (the default), the security module deploys a Key
+# Vault with the firewall locked down. To bootstrap from a local CLI or a
+# hosted CI runner, Terraform needs data-plane access to the vault during
+# apply, which requires either a private endpoint (production) or a temporary
+# allow-list opening (dev/bootstrap).
+enable_https                     = true
+kv_public_network_access_enabled = true
+# Replace with your egress IPv4: curl -4 -fsS ifconfig.me
+kv_allowed_ip_ranges = ["198.51.100.10/32"]
+appgw_cert_subject   = "CN=appgw.example.com"
+appgw_cert_dns_names = ["appgw.example.com"]
+
 tags = {
   environment = "dev"
   project     = "hub-spoke-reference"

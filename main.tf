@@ -79,10 +79,10 @@ module "hub" {
 
   web_backend_ip = module.spoke_compute.web_vm_private_ip
 
-  spoke_subnet_ids_for_firewall_egress = [
-    module.networking.web_subnet_id,
-    module.networking.app_subnet_id,
-  ]
+  spoke_subnet_associations = {
+    web = module.networking.web_subnet_id
+    app = module.networking.app_subnet_id
+  }
 
   log_retention_days = var.log_retention_days
 

@@ -33,10 +33,10 @@ variable "web_backend_ip" {
   type        = string
 }
 
-variable "spoke_subnet_ids_for_firewall_egress" {
-  description = "Spoke subnet IDs whose 0.0.0.0/0 traffic must be force-tunneled through the firewall."
-  type        = list(string)
-  default     = []
+variable "spoke_subnet_associations" {
+  description = "Map of static name => subnet ID for spoke subnets whose 0.0.0.0/0 traffic must be force-tunneled through the firewall. Keys must be known at plan time (do not derive from resource attributes)."
+  type        = map(string)
+  default     = {}
 }
 
 variable "log_retention_days" {

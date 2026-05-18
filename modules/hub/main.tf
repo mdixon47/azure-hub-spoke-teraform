@@ -163,7 +163,7 @@ resource "azurerm_route_table" "spoke_egress" {
 }
 
 resource "azurerm_subnet_route_table_association" "spoke" {
-  for_each       = toset(var.spoke_subnet_ids_for_firewall_egress)
+  for_each       = var.spoke_subnet_associations
   subnet_id      = each.value
   route_table_id = azurerm_route_table.spoke_egress.id
 }
