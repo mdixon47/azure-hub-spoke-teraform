@@ -3,6 +3,54 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
+## (uncommitted) — 2026-05-18 — `feat(ci)`: OIDC + JIT state-SA firewall (F2)
+
+### Added
+- `scripts/oidc-create-app.sh` — idempotent creator for `gh-tf-<env>` Azure
+  AD app + service principal + two federated credentials (subjects
+  `repo:mdixon47/terraform:environment:<env>` and `…:environment:<env>-apply`).
+- `scripts/oidc-grant-rbac.sh` — idempotent role-assignment grants:
+  `Contributor` at subscription scope and `Storage Blob Data Contributor`
+  at the state-container scope for the per-env SP.
+
+### Changed
+- `.github/workflows/terraform-ci.yml` (plan job) and
+  `.github/workflows/terraform-apply.yml` (plan + apply jobs): each Azure-
+  touching job now performs a **just-in-time SA firewall toggle** between
+  `azure/login` and `terraform init`:
+  1. Detect the runner's egress IP via `api.ipify.org`.
+  2. `az storage account network-rule add` for that IP on the state SA,
+     then `sleep 30` to let the rule propagate.
+  3. Run `terraform init` / `plan` / `apply` against the now-reachable
+     state container.
+  4. `if: always()` cleanup step calls `az storage account network-rule
+     remove` so the rule never outlives the job (even on failure).
+
+### Azure side (out-of-tree, captured here for the audit trail)
+- App registration `gh-tf-dev` created with two federated credentials.
+- SP `gh-tf-dev` granted:
+  - `Contributor` on `/subscriptions/2afdabf1-…`
+  - `Storage Blob Data Contributor` on the `tfstate` container
+  - `Storage Account Contributor` on the `tfstate066541de13d8e2` SA
+    (minimum role needed to mutate `networkRuleSet` from the runner)
+- GitHub environments `dev` and `dev-apply` created.
+- Env-scoped secrets on both: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
+  `AZURE_SUBSCRIPTION_ID`.
+- Repo variables: `TFSTATE_RG`, `TFSTATE_SA`, `TFSTATE_CONTAINER`.
+
+### Why F2 (vs. F1 / F3)
+- **F1** (drop SA firewall, rely on Entra-ID-only auth) was simpler but
+  removes a layer of network defense-in-depth.
+- **F2** (this change) keeps `defaultAction = Deny` and adds only the
+  current runner's IP for the duration of the job. ~10s overhead per job.
+- **F3** (self-hosted runner in the hub VNet with a private endpoint on
+  the SA) is the long-term target but is a separate workstream.
+
+### Why GitHub-hosted runner CIDR whitelisting is **not** viable
+- `https://api.github.com/meta` returns ~6.5k CIDRs in `actions[]`.
+- Azure Storage SA firewalls cap at **200** IP rules; service-tag
+  whitelisting (`GitHubActions`) is not supported on SA firewalls.
+
 ## 8e2c913 — 2026-05-18 — `build(deps)`: bump `hashicorp/setup-terraform` 3 → 4 (Dependabot #9)
 
 ### Changed

@@ -36,6 +36,17 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Detect runner public IP
+        id: runner-ip
+        run: echo "ip=$(curl -fsSL https://api.ipify.org)" >> "$GITHUB_OUTPUT"
+      - name: Allow runner IP on state SA firewall
+        run: |
+          az storage account network-rule add \
+            --resource-group "${{ vars.TFSTATE_RG }}" \
+            --account-name "${{ vars.TFSTATE_SA }}" \
+            --ip-address "${{ steps.runner-ip.outputs.ip }}" \
+            --output none
+          sleep 30
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ env.TF_VERSION }}
@@ -63,6 +74,14 @@ jobs:
           path: tfplan
           retention-days: 14
           if-no-files-found: error
+      - name: Remove runner IP from state SA firewall
+        if: always() && steps.runner-ip.outputs.ip != ''
+        run: |
+          az storage account network-rule remove \
+            --resource-group "${{ vars.TFSTATE_RG }}" \
+            --account-name "${{ vars.TFSTATE_SA }}" \
+            --ip-address "${{ steps.runner-ip.outputs.ip }}" \
+            --output none || true
 
   apply:
     name: apply (${{ inputs.environment }})
@@ -78,6 +97,17 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Detect runner public IP
+        id: runner-ip
+        run: echo "ip=$(curl -fsSL https://api.ipify.org)" >> "$GITHUB_OUTPUT"
+      - name: Allow runner IP on state SA firewall
+        run: |
+          az storage account network-rule add \
+            --resource-group "${{ vars.TFSTATE_RG }}" \
+            --account-name "${{ vars.TFSTATE_SA }}" \
+            --ip-address "${{ steps.runner-ip.outputs.ip }}" \
+            --output none
+          sleep 30
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ env.TF_VERSION }}
@@ -93,3 +123,11 @@ jobs:
             -backend-config="key=${{ inputs.environment }}.terraform.tfstate"
       - name: terraform apply
         run: terraform apply -input=false -no-color tfplan
+      - name: Remove runner IP from state SA firewall
+        if: always() && steps.runner-ip.outputs.ip != ''
+        run: |
+          az storage account network-rule remove \
+            --resource-group "${{ vars.TFSTATE_RG }}" \
+            --account-name "${{ vars.TFSTATE_SA }}" \
+            --ip-address "${{ steps.runner-ip.outputs.ip }}" \
+            --output none || true
