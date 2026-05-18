@@ -3,46 +3,68 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
-## (uncommitted) — 2026-05-18 — `feat(ci)`: OIDC + JIT state-SA firewall (F2)
+## (PR #11) — 2026-05-18 — OIDC + JIT state-SA firewall (F2), end-to-end
+
+Smoke-tested on PR #11 (`ci/smoke-test-oidc` → `main`). Final state on
+commit `4e16aa0`: `terraform plan` green with `Plan: 53 to add`,
+artifact uploaded, SA firewall back to 1 rule (operator IP only). The
+only red check is the orphan `cost estimate` workflow job (the
+Infracost GitHub App itself posts the PR comment fine).
 
 ### Added
-- `scripts/oidc-create-app.sh` — idempotent creator for `gh-tf-<env>` Azure
-  AD app + service principal + two federated credentials (subjects
-  `repo:mdixon47/terraform:environment:<env>` and `…:environment:<env>-apply`).
-- `scripts/oidc-grant-rbac.sh` — idempotent role-assignment grants:
-  `Contributor` at subscription scope and `Storage Blob Data Contributor`
-  at the state-container scope for the per-env SP.
+- `scripts/oidc-create-app.sh` — idempotent creator for `gh-tf-<env>`
+  Azure AD app + service principal + two federated credentials (subjects
+  `repo:mdixon47/terraform:environment:<env>` and `…:<env>-apply`).
+- `scripts/oidc-grant-rbac.sh` — idempotent role grants:
+  `Contributor` at subscription scope, `Storage Blob Data Contributor`
+  on the state container, and `Storage Account Contributor` on the state
+  SA (required to mutate `networkRuleSet` from the runner).
+- `scripts/oidc-set-workload-secrets.sh` — provisions
+  `VM_ADMIN_PASSWORD`, `SQL_ADMIN_PASSWORD`, and `VM_ADMIN_SSH_PUBLIC_KEY`
+  to the `dev` and `dev-apply` environments. Values are sent over stdin
+  (never argv/logs). Optional `--save-passwords` flag writes them to
+  `~/.ssh/gh-tf-dev-passwords.local` (0600) for out-of-band recovery.
 
 ### Changed
+- `providers.tf` (`cd1f177`): documentation comment on the `azurerm`
+  backend block noting the OIDC + JIT firewall flow; `use_azuread_auth`
+  retained.
 - `.github/workflows/terraform-ci.yml` (plan job) and
-  `.github/workflows/terraform-apply.yml` (plan + apply jobs): each Azure-
-  touching job now performs a **just-in-time SA firewall toggle** between
-  `azure/login` and `terraform init`:
-  1. Detect the runner's egress IP via `api.ipify.org`.
-  2. `az storage account network-rule add` for that IP on the state SA,
-     then `sleep 30` to let the rule propagate.
-  3. Run `terraform init` / `plan` / `apply` against the now-reachable
-     state container.
-  4. `if: always()` cleanup step calls `az storage account network-rule
-     remove` so the rule never outlives the job (even on failure).
+  `.github/workflows/terraform-apply.yml` (plan + apply jobs):
+  1. **Job-level env** (`9f75ddc`): set `ARM_USE_OIDC=true`,
+     `ARM_CLIENT_ID`, `ARM_TENANT_ID`, `ARM_SUBSCRIPTION_ID` so the
+     azurerm provider and backend use the federated identity instead of
+     falling back to CLI-as-user auth.
+  2. **JIT firewall** (`b11fbbc`, refined in `bd841f0`, `a10b02b`):
+     between `azure/login` and `terraform init`, add the runner's egress
+     IP to the SA `networkRuleSet`, wait for propagation, run TF, then
+     `if: always()` remove the rule.
+  3. **Stable-readiness probe** (`a10b02b`): the original `sleep 30`
+     raced Azure Storage's multiple front-end IPs (rule propagation is
+     per-front-end). Replaced with `az storage blob list --auth-mode
+     login` against the state container, requiring **3 consecutive
+     successes 5s apart** (≥15s dwell, capped at 180s total). Same auth
+     path Terraform uses, so a pass guarantees both firewall propagation
+     and RBAC are effective.
+  4. **Init retry** (`a10b02b`): `terraform init` is wrapped in a
+     3-attempt loop with 15s backoff (init is idempotent), catching the
+     residual case where a healthy-during-probe front-end later 403s.
 
 ### Azure side (out-of-tree, captured here for the audit trail)
 - App registration `gh-tf-dev` created with two federated credentials.
-- SP `gh-tf-dev` granted:
-  - `Contributor` on `/subscriptions/2afdabf1-…`
-  - `Storage Blob Data Contributor` on the `tfstate` container
-  - `Storage Account Contributor` on the `tfstate066541de13d8e2` SA
-    (minimum role needed to mutate `networkRuleSet` from the runner)
+- SP `gh-tf-dev` granted the three roles above.
 - GitHub environments `dev` and `dev-apply` created.
-- Env-scoped secrets on both: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
-  `AZURE_SUBSCRIPTION_ID`.
+- Env-scoped secrets: `AZURE_{CLIENT_ID,TENANT_ID,SUBSCRIPTION_ID}` plus
+  workload secrets `VM_ADMIN_PASSWORD`, `SQL_ADMIN_PASSWORD`,
+  `VM_ADMIN_SSH_PUBLIC_KEY`.
 - Repo variables: `TFSTATE_RG`, `TFSTATE_SA`, `TFSTATE_CONTAINER`.
 
 ### Why F2 (vs. F1 / F3)
 - **F1** (drop SA firewall, rely on Entra-ID-only auth) was simpler but
   removes a layer of network defense-in-depth.
 - **F2** (this change) keeps `defaultAction = Deny` and adds only the
-  current runner's IP for the duration of the job. ~10s overhead per job.
+  current runner's IP for the duration of the job. ~45s probe + minor
+  cleanup overhead per run.
 - **F3** (self-hosted runner in the hub VNet with a private endpoint on
   the SA) is the long-term target but is a separate workstream.
 
@@ -50,6 +72,23 @@ grouped by the commit on `main` that introduced them.
 - `https://api.github.com/meta` returns ~6.5k CIDRs in `actions[]`.
 - Azure Storage SA firewalls cap at **200** IP rules; service-tag
   whitelisting (`GitHubActions`) is not supported on SA firewalls.
+
+### Failure modes encountered and resolved
+- **`AADSTS90002` / "Tenant not found"** during initial federation —
+  caused by hidden characters during manual secret entry. Resolved by
+  re-setting via `gh secret set` over stdin.
+- **`Authenticating using the Azure CLI is only supported as a User`**
+  — provider/backend didn't pick up the OIDC token from
+  `azure/login`'s CLI session. Fixed by setting the `ARM_*` env vars
+  job-side (`9f75ddc`).
+- **`Failed to get existing workspaces: 403 AuthorizationFailure`** —
+  firewall propagation race. Fixed by the streak-probe approach
+  (`a10b02b`).
+- **`"admin_ssh_key.0.public_key" is not a complete SSH2 Public Key`**
+  — initially ed25519 (rejected by the azurerm schema); then RSA but
+  uploaded via `printf '%s' | gh secret set --body -`, which stripped a
+  byte. Fixed by uploading the `.pub` directly via `gh secret set <
+  file` (`4e16aa0` updates the helper script accordingly).
 
 ## 8e2c913 — 2026-05-18 — `build(deps)`: bump `hashicorp/setup-terraform` 3 → 4 (Dependabot #9)
 
@@ -205,7 +244,13 @@ DevSecOps toolchain in CI:
   `terraform-apply` round-trip. v8 changes the `digest-mismatch` default
   from `warn` to `error` and migrates to ESM; worth validating against
   real artifacts before landing.
-- OIDC federation + apply-pipeline runner (self-hosted-in-VNet or
-  state-firewall allow-list) so `terraform-apply.yml` can reach the
-  state backend. Required before the apply workflow can be exercised
-  end-to-end, which is in turn the trigger for resolving PR #6.
+- **OIDC federation for `staging` and `prod`** — `dev` is done (PR #11).
+  Repeat `scripts/oidc-create-app.sh` and `scripts/oidc-grant-rbac.sh`
+  for `gh-tf-staging` and `gh-tf-prod` and seed their environment
+  secrets. Apply pipeline requires required-reviewers on `*-apply`
+  environments.
+- **Orphan `cost estimate` workflow job** — superseded by the Infracost
+  GitHub App (which already posts PR comments). Either delete the job
+  from `terraform-ci.yml` or set `INFRACOST_API_KEY` at repo scope.
+- **`docs/oidc-setup.md`** — capture the end-to-end runbook so future
+  environments can be brought up without reverse-engineering this log.
