@@ -27,6 +27,11 @@ jobs:
     name: plan (${{ inputs.environment }})
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    env:
+      ARM_USE_OIDC: "true"
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     outputs:
       plan-artifact: tfplan-${{ github.run_id }}
     steps:
@@ -90,6 +95,11 @@ jobs:
     # Use a separate "<env>-apply" GitHub environment with required reviewers
     # for staging/prod; manual approval gates execution.
     environment: ${{ inputs.environment }}-apply
+    env:
+      ARM_USE_OIDC: "true"
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: azure/login@v3
