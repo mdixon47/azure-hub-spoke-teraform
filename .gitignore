@@ -1,0 +1,49 @@
+# --- Terraform ---------------------------------------------------------------
+.terraform/
+.terraform.lock.hcl.bak
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Inputs that may contain secrets
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!*.tfvars.example.json
+
+# Plan artifacts
+*.tfplan
+*.tfplan.binary
+plan.out
+tfplan
+tfplan.json
+
+# Override files (commonly used for local-only overrides)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI configuration
+.terraformrc
+terraform.rc
+
+# --- Tooling output ----------------------------------------------------------
+tfsec-results.*
+tfsec-results/
+checkov-results.*
+checkov-results/
+trivy-results.*
+trivy-results/
+infracost.json
+.tflint.d/
+
+# --- OS / Editor -------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

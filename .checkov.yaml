@@ -1,0 +1,56 @@
+# Checkov configuration for Terraform / Azure.
+# Docs: https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html
+---
+framework:
+  - terraform
+
+# Quiet output unless something fails.
+quiet: true
+compact: true
+
+# Soft-fail on LOW/MEDIUM so the PR is still reviewable; fail on HIGH/CRITICAL.
+soft-fail-on:
+  - LOW
+  - MEDIUM
+
+# Output formats produced by CI.
+output:
+  - cli
+  - sarif
+
+output-file-path: checkov-results
+
+# Skip framework discovery on common non-IaC paths.
+skip-path:
+  - .git
+  - .terraform
+  - docs
+
+# Suppressions: justify each in a comment. Keep this list as short as possible.
+skip-check:
+  # Storage account access keys: we keep shared_access_key_enabled=true intentionally
+  # for the reference architecture; production should rotate via Key Vault.
+  - CKV_AZURE_59
+  # Storage minimum TLS version is already set explicitly via min_tls_version=TLS1_2.
+  # Avoid duplicate noise from related-but-superseded checks.
+  - CKV2_AZURE_38
+  # IDPS Deny requires Azure Firewall Premium tier. The hub module supports this
+  # via var.firewall_sku_tier="Premium"; default stays Standard to keep dev cost
+  # predictable. Set firewall_sku_tier=Premium to enable IDPS in Deny mode.
+  - CKV_AZURE_220
+  # AppGw subnet NSG must allow inbound 80/Internet to support the
+  # HTTP -> HTTPS permanent redirect served by Application Gateway. The 443
+  # listener handles all real traffic; 80 only returns 301 to https://.
+  - CKV_AZURE_160
+  # CKV_AZURE_217 inspects http_listener[0].protocol expecting "Https".
+  # modules/hub/main.tf declares an HTTPS listener via a `dynamic` block
+  # (gated on var.enable_https) which is enumerated *first* in source order
+  # and is the primary ingress when HTTPS is enabled. Checkov does not
+  # currently flatten dynamic listener blocks into the [0] index when a
+  # static http_listener is also present in the same resource. See
+  # https://github.com/bridgecrewio/checkov/issues/5396 .
+  - CKV_AZURE_217
+  # SQL zone redundancy requires Premium/BC or General Purpose Gen5+. The
+  # default SKU is S0 for cost. Enable by setting sql_database_sku to a
+  # supported tier and sql_zone_redundant=true.
+  - CKV_AZURE_229

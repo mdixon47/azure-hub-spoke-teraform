@@ -1,0 +1,36 @@
+# Gitleaks configuration. Inherits the default ruleset and adds Azure-specific
+# patterns frequently seen in misuse of these modules.
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+
+[extend]
+useDefault = true
+
+[[rules]]
+id          = "azure-storage-account-key"
+description = "Azure Storage Account key (base64 88-char)"
+regex       = '''(?i)(AccountKey|account_key|storage[_-]?key)\s*[:=]\s*['"]?[A-Za-z0-9+/]{86,88}={0,2}['"]?'''
+tags        = ["secret", "azure", "storage"]
+
+[[rules]]
+id          = "azure-sql-connection-string"
+description = "Azure SQL connection string with password"
+regex       = '''(?i)Server=tcp:[^;]+;.*Password=[^;]{8,}'''
+tags        = ["secret", "azure", "sql"]
+
+[[rules]]
+id          = "azure-service-principal-secret"
+description = "Azure Service Principal client secret in env/var"
+regex       = '''(?i)(ARM_CLIENT_SECRET|AZURE_CLIENT_SECRET)\s*[:=]\s*['"]?[A-Za-z0-9~._\-]{34,}['"]?'''
+tags        = ["secret", "azure", "sp"]
+
+[allowlist]
+description = "Global allowlist for example/test fixtures."
+paths = [
+  '''terraform\.tfvars\.example''',
+  '''docs/.*\.md''',
+  '''README\.md''',
+]
+regexes = [
+  '''REPLACE_WITH_STRONG_PASSWORD!''',
+  '''ssh-rsa AAAAB3NzaC1yc2E\.\.\. user@host''',
+]

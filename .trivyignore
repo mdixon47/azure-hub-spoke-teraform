@@ -1,0 +1,9 @@
+# Trivy/Aqua misconfig allow-list. Each entry MUST cite a rationale.
+#
+# AZU-0039 - "Linux virtual machine allows password authentication"
+# False positive: modules/spoke-compute/main.tf sets
+#   disable_password_authentication = local.use_ssh_key
+# which is `true` whenever an SSH public key is supplied via
+# var.vm_admin_ssh_public_key. Trivy cannot evaluate the conditional and flags
+# the literal expression. Operators must set vm_admin_ssh_public_key in prod.
+AZU-0039

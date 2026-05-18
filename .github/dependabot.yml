@@ -1,0 +1,35 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - ci
+
+  - package-ecosystem: terraform
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - terraform
+
+  - package-ecosystem: terraform
+    directory: /modules/networking
+    schedule:
+      interval: weekly
+  - package-ecosystem: terraform
+    directory: /modules/hub
+    schedule:
+      interval: weekly
+  - package-ecosystem: terraform
+    directory: /modules/spoke-compute
+    schedule:
+      interval: weekly
+  - package-ecosystem: terraform
+    directory: /modules/data
+    schedule:
+      interval: weekly

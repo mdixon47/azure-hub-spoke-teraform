@@ -1,0 +1,33 @@
+# Copy this file to terraform.tfvars and fill in the sensitive values.
+# DO NOT commit terraform.tfvars to source control.
+
+prefix   = "hubspk"
+location = "eastus"
+
+# Credentials -----------------------------------------------------------------
+vm_admin_username = "azureuser"
+# Provide either a password OR an SSH public key. SSH key takes precedence.
+# vm_admin_password       = "REPLACE_WITH_STRONG_PASSWORD!"
+vm_admin_ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2E... user@host"
+
+sql_admin_username = "sqladminuser"
+sql_admin_password = "REPLACE_WITH_STRONG_PASSWORD!"
+
+# Networking ------------------------------------------------------------------
+hub_vnet_cidr   = "10.0.0.0/16"
+spoke_vnet_cidr = "10.1.0.0/16"
+
+# Compute sizing --------------------------------------------------------------
+web_vm_size = "Standard_B2s"
+app_vm_size = "Standard_B2s"
+
+# Observability & lifecycle ---------------------------------------------------
+log_retention_days    = 30
+enable_resource_locks = false
+
+tags = {
+  environment = "dev"
+  project     = "hub-spoke-reference"
+  managed_by  = "terraform"
+  owner       = "platform-team"
+}
