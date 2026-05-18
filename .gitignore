@@ -29,6 +29,12 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# Local backend-config and other per-developer state pointers
+backend.hcl
+*.backend.hcl
+.tfstate-sa-name.local
+*.local
+
 # --- Tooling output ----------------------------------------------------------
 tfsec-results.*
 tfsec-results/

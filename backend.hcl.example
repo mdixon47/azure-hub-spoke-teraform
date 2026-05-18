@@ -1,0 +1,23 @@
+# Backend configuration for `terraform init -backend-config=backend.hcl`.
+#
+# This file is the *template*. Copy it to `backend.hcl` (gitignored) and fill in
+# the values produced by the bootstrap step:
+#
+#   az group create -n tfstate-rg -l eastus
+#   SA=tfstate$(openssl rand -hex 6)
+#   az storage account create -n "$SA" -g tfstate-rg -l eastus \
+#     --sku Standard_GRS --min-tls-version TLS1_2 \
+#     --allow-blob-public-access false
+#   az storage container create -n tfstate --account-name "$SA" --auth-mode login
+#
+# Then:
+#
+#   cp backend.hcl.example backend.hcl
+#   # edit storage_account_name to match the value generated above
+#   terraform init -backend-config=backend.hcl
+#
+resource_group_name  = "tfstate-rg"
+storage_account_name = "REPLACE_ME"
+container_name       = "tfstate"
+key                  = "dev.tfstate"
+use_azuread_auth     = true
