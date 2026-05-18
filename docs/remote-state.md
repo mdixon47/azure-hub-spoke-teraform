@@ -90,12 +90,53 @@ Still open and pending review:
 | #6 | `actions/download-artifact` v4 → v8 | Not currently referenced; safe to defer. |
 | #9 | `hashicorp/setup-terraform` v3 → v4 | Node 24 baseline; GitHub-hosted runners support it. |
 
+## Hardening applied
+
+The remote-state account is configured beyond the minimum bootstrap:
+
+| Control | Setting |
+|---|---|
+| Blob versioning | enabled |
+| Blob soft-delete retention | 14 days |
+| Container soft-delete retention | 14 days |
+| Storage firewall default action | `Deny` |
+| Firewall bypass | `AzureServices, Logging, Metrics` |
+| Firewall IPv4 allow-list | operator `/32` (recorded in `.my-ip.local`, gitignored) |
+| Resource-group lock | `CanNotDelete` (`tfstate-rg-no-delete`) |
+
+Re-apply on a new workstation:
+
+```bash
+MY_IP=$(curl -4 -fsS ifconfig.me)
+az storage account blob-service-properties update \
+  --account-name tfstate066541de13d8e2 -g tfstate-rg \
+  --enable-versioning true \
+  --enable-delete-retention true --delete-retention-days 14 \
+  --enable-container-delete-retention true --container-delete-retention-days 14
+
+az storage account update -n tfstate066541de13d8e2 -g tfstate-rg \
+  --default-action Deny --bypass AzureServices Logging Metrics
+az storage account network-rule add -n tfstate066541de13d8e2 -g tfstate-rg \
+  --ip-address "$MY_IP"
+
+az lock create --name tfstate-rg-no-delete --resource-group tfstate-rg \
+  --lock-type CanNotDelete --notes "Protects Terraform remote state RG"
+```
+
+> **Operator access**: because the firewall defaults to `Deny`, any new operator
+> must have their public IPv4 added to the allow-list before `terraform init` /
+> `plan` / `apply` will succeed. Adding new IPs requires control-plane RBAC on
+> the storage account (Contributor or higher); the existing data-plane role
+> (`Storage Blob Data Owner`) is not sufficient for firewall edits.
+>
+> **CI access**: GitHub-hosted runners are blocked by this firewall. When the
+> `terraform-apply` workflow is wired up, plan to use a self-hosted runner in a
+> VNet with a service/private endpoint rather than widening the public allow-list.
+
 ## Next steps
 
 1. **Plan** (`terraform plan`) once required inputs are provided (Key Vault IP
    allow-list, VM admin password, etc.).
-2. **Harden** the state account: enable blob versioning + soft delete; restrict
-   the storage firewall to operator `/32` + Azure services; place a
-   `CanNotDelete` lock on `tfstate-rg`.
-3. **Wire OIDC** for the `terraform-apply` workflow so CI uses a federated
-   identity instead of a service-principal secret.
+2. **Wire OIDC** for the `terraform-apply` workflow so CI uses a federated
+   identity instead of a service-principal secret, paired with a self-hosted
+   runner that satisfies the state-account firewall.
