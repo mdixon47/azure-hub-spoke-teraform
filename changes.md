@@ -3,6 +3,54 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
+## 8e2c913 — 2026-05-18 — `build(deps)`: bump `hashicorp/setup-terraform` 3 → 4 (Dependabot #9)
+
+### Changed
+- `.github/workflows/terraform-ci.yml` (3 refs) and
+  `.github/workflows/terraform-apply.yml` (1 ref): `setup-terraform@v3` →
+  `@v4`. Node runtime bumps 20 → 24 with no input/output schema change.
+
+### Verified
+- All scanner checks (checkov, tfsec, terrascan, trivy config + fs,
+  gitleaks) green on the rebased PR head.
+- Post-merge `terraform-ci` workflow correctly skipped on `main` push
+  (path filter `**/*.tf` — no Terraform code changed).
+- `cost estimate` and `terraform plan` failures on the PR head are
+  expected (Dependabot PRs run with `Secret source: Dependabot`, so the
+  `INFRACOST_API_KEY` and Azure OIDC `client-id`/`tenant-id` secrets are
+  not available). Same checks ran clean on the equivalent push to `main`
+  prior to the Dependabot bump.
+
+## 6709a2b — 2026-05-18 — `build(deps)`: bump `azure/login` 2 → 3 (Dependabot #5)
+
+### Changed
+- `.github/workflows/terraform-ci.yml` (1 ref) and
+  `.github/workflows/terraform-apply.yml` (2 refs): `azure/login@v2` →
+  `@v3`. Node runtime bumps 20 → 24; input schema unchanged.
+
+### Verified
+- 8/8 substantive checks green on the rebased PR head; 2 expected
+  Dependabot-secret-restricted failures as above.
+
+## e92068f — 2026-05-18 — `build(deps)`: bump `github/codeql-action` 3 → 4 (Dependabot #4)
+
+### Changed
+- `.github/workflows/security.yml` (5 refs): `codeql-action/upload-sarif@v3`
+  → `@v4`. Steps are already `continue-on-error: true` (from `d3190c0`),
+  so a regression cannot block CI. Node runtime bumps 20 → 24; API
+  unchanged.
+
+### Verified
+- 5/5 checks green on the PR head; 8/8 substantive checks green on the
+  post-merge `main` push.
+
+## c2b13b2 — 2026-05-18 — `docs`: add `changes.md`
+
+### Added
+- `changes.md`: this file. Reverse-chronological log of all commits on
+  `main`, grouped by type (Fixed / Changed / Added / Verified / Closed /
+  Held / Open items).
+
 ## a5bf12b — 2026-05-18 — `fix(hub)`: static-keyed map for spoke route table associations
 
 ### Fixed
@@ -105,10 +153,11 @@ DevSecOps toolchain in CI:
 
 ## Open items
 
-- PRs #4 (`codeql-action` v3 → v4), #5 (`azure/login` v2 → v3),
-  #9 (`setup-terraform` v3 → v4): verified safe, awaiting merge.
 - PR #6 (`download-artifact` v4 → v8): held pending first successful
-  `terraform-apply` run.
+  `terraform-apply` round-trip. v8 changes the `digest-mismatch` default
+  from `warn` to `error` and migrates to ESM; worth validating against
+  real artifacts before landing.
 - OIDC federation + apply-pipeline runner (self-hosted-in-VNet or
   state-firewall allow-list) so `terraform-apply.yml` can reach the
-  state backend.
+  state backend. Required before the apply workflow can be exercised
+  end-to-end, which is in turn the trigger for resolving PR #6.
