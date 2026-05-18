@@ -84,8 +84,21 @@ jobs:
             --account-name "${{ vars.TFSTATE_SA }}" \
             --ip-address "${{ steps.runner-ip.outputs.ip }}" \
             --output none
-          # Firewall propagation can take up to ~30s
-          sleep 30
+          # Poll the data plane (Entra ID auth — same path Terraform uses)
+          # until the rule propagates. Capped at 120s.
+          for i in $(seq 1 24); do
+            if az storage blob list \
+                 --auth-mode login \
+                 --account-name "${{ vars.TFSTATE_SA }}" \
+                 --container-name "${{ vars.TFSTATE_CONTAINER }}" \
+                 --num-results 1 -o none 2>/dev/null; then
+              echo "firewall+RBAC ready after $((i*5))s"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::SA firewall did not propagate within 120s"
+          exit 1
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ env.TF_VERSION }}
