@@ -50,6 +50,13 @@ skip-check:
   # static http_listener is also present in the same resource. See
   # https://github.com/bridgecrewio/checkov/issues/5396 .
   - CKV_AZURE_217
+  # CKV_AZURE_218 ("AppGw defines secure protocols / ciphers") raises a
+  # Python TypeError ("unhashable type: 'list'") in checkov 3.2.527 when an
+  # explicit ssl_policy with cipher_suites is declared. The underlying
+  # control is enforced by the pinned TLS 1.2+ ssl_policy block in
+  # modules/hub/main.tf. Tracking upstream:
+  # https://github.com/bridgecrewio/checkov/issues/6730
+  - CKV_AZURE_218
   # SQL zone redundancy requires Premium/BC or General Purpose Gen5+. The
   # default SKU is S0 for cost. Enable by setting sql_database_sku to a
   # supported tier and sql_zone_redundant=true.
