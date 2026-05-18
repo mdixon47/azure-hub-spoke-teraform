@@ -9,18 +9,20 @@
 set -euo pipefail
 
 REPO="${REPO:-mdixon47/terraform}"
-KEY_PATH="${KEY_PATH:-$HOME/.ssh/gh-tf-dev}"
+# Azure VMs accept RSA keys via the azurerm provider schema; ed25519 is
+# rejected with "is not a complete SSH2 Public Key". Use 4096-bit RSA.
+KEY_PATH="${KEY_PATH:-$HOME/.ssh/gh-tf-dev-rsa}"
 ENVS=(dev dev-apply)
 
 umask 077
 
 # ---- SSH keypair ------------------------------------------------------------
 if [[ ! -f "${KEY_PATH}" ]]; then
-  ssh-keygen -t ed25519 -f "${KEY_PATH}" -N "" \
+  ssh-keygen -t rsa -b 4096 -f "${KEY_PATH}" -N "" \
     -C "gh-tf-dev@$(date -u +%Y%m%dT%H%M%SZ)" >/dev/null
-  echo "Generated new SSH keypair at ${KEY_PATH}{,.pub}"
+  echo "Generated new RSA-4096 keypair at ${KEY_PATH}{,.pub}"
 else
-  echo "Reusing existing SSH keypair at ${KEY_PATH}{,.pub}"
+  echo "Reusing existing keypair at ${KEY_PATH}{,.pub}"
 fi
 
 # ---- Password generator -----------------------------------------------------
