@@ -15,7 +15,9 @@ terraform {
   # Remote state backend. The values below are placeholders satisfying the
   # provider schema for `terraform validate`; the real values MUST be supplied
   # at init time via `-backend-config` flags or an `-backend-config=<file>.hcl`
-  # file (see docs/devsecops.md and the `terraform-apply` workflow).
+  # file (see docs/devsecops.md and the `terraform-apply` workflow). In CI the
+  # runner authenticates via GitHub OIDC and the state SA admits the runner's
+  # egress IP just-in-time for the duration of the job (see changes.md).
   backend "azurerm" {
     resource_group_name  = "PLACEHOLDER"
     storage_account_name = "PLACEHOLDER"

@@ -62,6 +62,11 @@ jobs:
     needs: [fmt, validate, tflint]
     if: github.event_name == 'pull_request'
     environment: dev
+    env:
+      ARM_USE_OIDC: "true"
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: azure/login@v3
@@ -79,18 +84,50 @@ jobs:
             --account-name "${{ vars.TFSTATE_SA }}" \
             --ip-address "${{ steps.runner-ip.outputs.ip }}" \
             --output none
-          # Firewall propagation can take up to ~30s
-          sleep 30
+          # Azure Storage has multiple front-end IPs behind the public
+          # endpoint; firewall rules propagate to each independently. A
+          # single passing probe is not sufficient — require N consecutive
+          # successes spaced 5s apart so we hit several front-ends. Capped
+          # at 180s total.
+          required=3
+          streak=0
+          for i in $(seq 1 36); do
+            if az storage blob list \
+                 --auth-mode login \
+                 --account-name "${{ vars.TFSTATE_SA }}" \
+                 --container-name "${{ vars.TFSTATE_CONTAINER }}" \
+                 --num-results 1 -o none 2>/dev/null; then
+              streak=$((streak + 1))
+              echo "probe $i: ok (streak=$streak/$required)"
+              [ "$streak" -ge "$required" ] && { echo "firewall+RBAC stable after $((i*5))s"; exit 0; }
+            else
+              streak=0
+              echo "probe $i: fail (streak reset)"
+            fi
+            sleep 5
+          done
+          echo "::error::SA firewall did not stabilise within 180s"
+          exit 1
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ env.TF_VERSION }}
       - name: terraform init
+        # Defense in depth: even after a stable probe, occasional 403s
+        # have been seen on the first init attempt. Retry up to 3 times.
         run: |
-          terraform init \
-            -backend-config="resource_group_name=${{ vars.TFSTATE_RG }}" \
-            -backend-config="storage_account_name=${{ vars.TFSTATE_SA }}" \
-            -backend-config="container_name=${{ vars.TFSTATE_CONTAINER }}" \
-            -backend-config="key=dev.terraform.tfstate"
+          for attempt in 1 2 3; do
+            if terraform init \
+                 -backend-config="resource_group_name=${{ vars.TFSTATE_RG }}" \
+                 -backend-config="storage_account_name=${{ vars.TFSTATE_SA }}" \
+                 -backend-config="container_name=${{ vars.TFSTATE_CONTAINER }}" \
+                 -backend-config="key=dev.terraform.tfstate"; then
+              exit 0
+            fi
+            echo "terraform init attempt $attempt failed; waiting 15s"
+            sleep 15
+          done
+          echo "::error::terraform init failed after 3 attempts"
+          exit 1
       - name: terraform plan
         env:
           TF_VAR_vm_admin_password: ${{ secrets.VM_ADMIN_PASSWORD }}
