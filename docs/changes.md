@@ -3,45 +3,35 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
-## (pending) — 2026-05-19 — `investigation`: `plan (dev)` login failure — root cause identified
+## (pending) — 2026-05-19 — `fix(oidc)`: correct federated credential subjects on `gh-tf-dev`
 
-### Runs
-| Run | Trigger | Result |
-|-----|---------|--------|
-| `26107951630` | Dependabot PR (`actions/checkout` 4→6) | ✗ `az` exit 1 |
-| `26113695817` | manual `workflow_dispatch` (`dev`, `auto_approve=false`) | ✗ unsupported `auth-type` |
-
-### What was tried
-Added `auth-type: OIDC` to all four `azure/login@v3` steps (run `26113695817`).
-**Result:** harder failure — `azure/login@v3` only accepts `SERVICE_PRINCIPAL`
-or `IDENTITY`; `OIDC` is not a recognised value. Change reverted.
+### Problem
+`plan (dev)` (and `apply (dev)`) failed with `az` exit code 1 — OIDC
+token-exchange error. No workflow-YAML change was needed; the issue was in
+the Azure App Registration.
 
 ### Root cause
-The `azure/login@v3` action defaults to `auth-type: SERVICE_PRINCIPAL`, which
-is correct for OIDC federation — no explicit `auth-type` override is needed or
-helpful. The underlying failure (`az` exits 1) is an OIDC token-exchange error,
-not a workflow-syntax problem.
+The `oidc-create-app.sh` script (PR #11) hardcoded the repo slug as
+`mdixon47/terraform`. The repo has since been renamed to
+`azure-hub-spoke-teraform`, so the two federated credentials in `gh-tf-dev`
+had wrong or swapped subjects:
 
-The token exchange fails when the Azure App Registration's federated credential
-subject does not match what GitHub puts in the OIDC token. For a job with
-`environment: dev` the required subject is:
+| Credential name | Old subject | New subject |
+|---|---|---|
+| `github-mdixon47-terraform-env-dev` | `repo:mdixon47/terraform:environment:dev` | `repo:mdixon47/azure-hub-spoke-teraform:environment:dev` |
+| `github-mdixon47-terraform-env-dev-apply` | `repo:mdixon47/azure-hub-spoke-teraform:environment:dev` *(wrong env)* | `repo:mdixon47/azure-hub-spoke-teraform:environment:dev-apply` |
 
-```
-repo:mdixon47/azure-hub-spoke-teraform:environment:dev
-```
+The second credential had the correct repo name but pointed at `environment:dev`
+(not `dev-apply`), leaving `apply (dev)` with no matching credential.
 
-### Action required (Azure Portal, out-of-band)
-1. Azure Portal → **App Registrations** → `gh-tf-dev` →
-   **Certificates & secrets → Federated credentials**.
-2. Confirm an entry exists with:
-   - **Issuer**: `https://token.actions.githubusercontent.com`
-   - **Subject identifier**: `repo:mdixon47/azure-hub-spoke-teraform:environment:dev`
-   - **Audience**: `api://AzureADTokenExchange`
-3. If the subject uses a different repo slug (e.g. `mdixon47/terraform`) it
-   must be updated to `azure-hub-spoke-teraform` — the repo was renamed at
-   some point (see the `scripts/oidc-create-app.sh` default in PR #11 which
-   used `mdixon47/terraform`).
-4. Repeat for `environment:dev-apply` (used by the `apply` job).
+### Fixed
+Updated both credentials via `az ad app federated-credential update`
+against app object ID `9fdb8ecb-c626-43eb-aecd-0cce2cb8565e`.
+No workflow files were changed.
+
+### Verified — run `26114963018`
+- `plan (dev)`: ✓ in 47s — `Plan: 0 to add, 1 to change, 0 to destroy.`
+- `apply (dev)`: ✓ in 1m26s — `Apply complete! Resources: 0 added, 1 changed, 0 destroyed.`.
 
 ## (pending) — 2026-05-19 — `fix(dev)`: switch VMs from `Standard_B2s_v2` → `Standard_D2als_v7` (quota exhausted)
 
