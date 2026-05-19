@@ -3,6 +3,35 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
+## (pending) — 2026-05-19 — `fix(ci)`: explicit `auth-type: OIDC` on all `azure/login@v3` steps
+
+### Problem
+`plan (dev)` failed with:
+> Login failed with Error: The process '/usr/bin/az' failed with exit code 1.
+> Double check if the 'auth-type' is correct.
+
+`azure/login@v3` was called with only `client-id`, `tenant-id`, and
+`subscription-id` (no `client-secret`). Without an explicit `auth-type`, the
+action must infer OIDC mode; on the `v3` release in use the inference silently
+falls back to a default that exits non-zero when no client secret is present
+and no explicit mode is declared.
+
+### Fixed
+- `.github/workflows/terraform-ci.yml` (plan job)
+- `.github/workflows/terraform-apply.yml` (plan job + apply job)
+- `.github/workflows/terraform-destroy.yml` (destroy job)
+
+Added `auth-type: OIDC` explicitly to all four `azure/login@v3` steps so the
+action uses workload identity federation without ambiguity.
+
+### Note
+If the failure persists after this change the root cause is a missing or
+mismatched federated credential in the Azure App Registration. The required
+subject for the `dev` environment is:
+`repo:mdixon47/azure-hub-spoke-teraform:environment:dev`
+Verify under Azure Portal → App Registration → Certificates & secrets →
+Federated credentials.
+
 ## (pending) — 2026-05-19 — `fix(dev)`: switch VMs from `Standard_B2s_v2` → `Standard_D2als_v7` (quota exhausted)
 
 ### Fixed
