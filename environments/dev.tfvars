@@ -18,8 +18,8 @@ spoke_vnet_cidr = "10.1.0.0/16"
 # ("SkuNotAvailable: Capacity Restrictions"). B2s_v2 (newer B-series v2 family,
 # same 2 vCPU / 8 GB shape as B2ms) has free capacity and validated via
 # `az vm create --validate`.
-web_vm_size = "Standard_B2s_v2"
-app_vm_size = "Standard_B2s_v2"
+web_vm_size = "Standard_D2als_v7"
+app_vm_size = "Standard_D2als_v7"
 
 # Observability & lifecycle ---------------------------------------------------
 log_retention_days    = 30

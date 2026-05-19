@@ -3,6 +3,50 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
+## (pending) — 2026-05-19 — `fix(dev)`: switch VMs from `Standard_B2s_v2` → `Standard_D2als_v7` (quota exhausted)
+
+### Fixed
+- `environments/dev.tfvars`: `web_vm_size` and `app_vm_size` changed from
+  `Standard_B2s_v2` to `Standard_D2als_v7`. Root cause: `standardBsv2Family`
+  has an approved quota of **0** on this subscription in `westus2`
+  (`OperationNotAllowed: Current Limit: 0, Additional Required: 2`). This is a
+  quota cap, not a capacity restriction — the SKU is simply unapproved for the
+  subscription.
+
+### Selection rationale
+- Scanned all SKUs in `westus2` for x86 2-vCPU ≥ 4 GB with no
+  `NotAvailableForSubscription` restriction and `limit > 0` quota.
+  `Standard_D2als_v7` (2 vCPU / 4 GB / AMD Genoa, `StandardDalsv7Family`,
+  quota limit = 10) was the smallest eligible match. Validated with
+  `az vm create --validate` against the `0001-com-ubuntu-server-jammy:22_04-lts-gen2`
+  image before applying.
+
+### Apply result
+- First apply attempt (`Standard_B2s_v2`): 12 of 14 resources succeeded; both
+  VMs failed with quota error. All other resources — subnets (6 in-place
+  updates), storage accounts (2 updates), storage container, SQL database,
+  diagnostic setting, and queue-properties resource — applied cleanly.
+- Second apply attempt (`Standard_D2als_v7`): `hubspkd-web-vm` and
+  `hubspkd-app-vm` created in 52 s. `Apply complete! Resources: 2 added,
+  1 changed, 0 destroyed.`
+
+### Also fixed (same session, backend config)
+- `backend.hcl`: `key` corrected from `dev.tfstate` → `dev.terraform.tfstate`
+  to match the key pattern used by the `terraform-apply` workflow
+  (`${{ inputs.environment }}.terraform.tfstate`). The old key pointed to a
+  181-byte empty state file; the real state (121 KB) is in
+  `dev.terraform.tfstate`.
+
+### Outputs (post-apply)
+```
+web_vm_private_ip              = 10.1.1.4
+app_vm_private_ip              = 10.1.2.4
+application_gateway_public_ip  = 20.64.201.199
+firewall_public_ip             = 20.64.201.203
+sql_server_fqdn                = hubspkd-sql-zdltzn.database.windows.net
+bastion_dns_name               = bst-e679b46d-ddd5-4174-87d8-1abcab3bc36c.bastion.azure.com
+```
+
 ## (pending) — 2026-05-19 — `chore(deps)`: bump azurerm provider 3.117.1 → `~> 4.x` and clear deprecations
 
 ### Changed
