@@ -18,7 +18,7 @@ jobs:
     name: tfsec (Aqua Trivy/IAC)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: aquasecurity/tfsec-sarif-action@v0.1.4
         with:
           sarif_file: tfsec.sarif
@@ -39,7 +39,7 @@ jobs:
     name: checkov
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: bridgecrewio/checkov-action@v12
         with:
           directory: .
@@ -65,7 +65,7 @@ jobs:
     name: trivy config + fs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Trivy config scan
         uses: aquasecurity/trivy-action@0.35.0
         with:
@@ -110,7 +110,7 @@ jobs:
     name: gitleaks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
@@ -124,7 +124,7 @@ jobs:
     name: terrascan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: tenable/terrascan-action@main
         with:
           iac_type: terraform
