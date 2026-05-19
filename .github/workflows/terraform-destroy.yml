@@ -67,22 +67,24 @@ jobs:
             --output none
           required=3
           streak=0
-          for i in $(seq 1 36); do
+          err_file=$(mktemp)
+          for i in $(seq 1 72); do
             if az storage blob list \
                  --auth-mode login \
                  --account-name "${{ vars.TFSTATE_SA }}" \
                  --container-name "${{ vars.TFSTATE_CONTAINER }}" \
-                 --num-results 1 -o none 2>/dev/null; then
+                 --num-results 1 -o none 2>"$err_file"; then
               streak=$((streak + 1))
               echo "probe $i: ok (streak=$streak/$required)"
               [ "$streak" -ge "$required" ] && { echo "firewall+RBAC stable after $((i*5))s"; exit 0; }
             else
               streak=0
-              echo "probe $i: fail (streak reset)"
+              first_line=$(head -1 "$err_file" 2>/dev/null | tr -d '\r\n' | cut -c1-200)
+              echo "probe $i: fail (streak reset): ${first_line:-no-stderr}"
             fi
             sleep 5
           done
-          echo "::error::SA firewall did not stabilise within 180s"
+          echo "::error::SA firewall did not stabilise within 360s; last error: $(head -3 "$err_file" 2>/dev/null)"
           exit 1
       - uses: hashicorp/setup-terraform@v4
         with:
