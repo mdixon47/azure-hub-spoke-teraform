@@ -3,8 +3,11 @@
 # vm_admin_ssh_public_key are injected by the workflow from env secrets
 # (TF_VAR_* env vars) so they MUST NOT appear here.
 
-prefix   = "hubspkd"
-location = "eastus2"
+prefix = "hubspkd"
+# westus2: validated SQL provisioning (eastus + eastus2 are blocked by
+# subscription policy with ProvisioningDisabled); Standard_B2s broadly
+# available; GZRS replication supported for StorageV2.
+location = "westus2"
 
 # Networking ------------------------------------------------------------------
 hub_vnet_cidr   = "10.0.0.0/16"
