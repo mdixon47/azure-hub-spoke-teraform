@@ -6,7 +6,7 @@ reach the state Storage Account through a just-in-time firewall
 toggle (Option F2 from the design notes).
 
 The procedure has been exercised end-to-end for `dev`, `staging`, and
-`prod`. See `changes.md` → PR #11 entry for the rationale and the
+`prod`. See [`changes.md`](changes.md) → PR #11 entry for the rationale and the
 failure modes that shaped the current implementation.
 
 ## Model
@@ -149,4 +149,4 @@ for E in <env> <env>-apply; do gh secret list --env "$E"; done
 - Provisioning scripts: `scripts/oidc-create-app.sh`,
   `scripts/oidc-grant-rbac.sh`, `scripts/oidc-set-workload-secrets.sh`
 - F2 audit trail (probe streak, init retry, failure modes):
-  `changes.md` → PR #11 entry
+  [`changes.md`](changes.md) → PR #11 entry

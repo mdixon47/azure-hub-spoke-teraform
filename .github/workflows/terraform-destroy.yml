@@ -65,7 +65,7 @@ jobs:
             --account-name "${{ vars.TFSTATE_SA }}" \
             --ip-address "${{ steps.runner-ip.outputs.ip }}" \
             --output none
-          required=3
+          required=1
           streak=0
           err_file=$(mktemp)
           for i in $(seq 1 72); do

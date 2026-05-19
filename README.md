@@ -98,5 +98,5 @@ terraform destroy
   firewall toggle used by the CI workflows.
 - [`docs/devsecops.md`](docs/devsecops.md) — scanner toolchain and
   policy gates in CI.
-- [`changes.md`](changes.md) — reverse-chronological log of notable
-  changes (architecture decisions, OIDC, failure modes resolved).
+- [`docs/changes.md`](docs/changes.md) — reverse-chronological log of
+  notable changes (architecture decisions, OIDC, failure modes resolved).

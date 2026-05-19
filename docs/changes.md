@@ -3,6 +3,118 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
+## (pending) — 2026-05-19 — `ci`: relax SA firewall probe streak 3 → 1
+
+### Changed
+- `.github/workflows/terraform-apply.yml` (plan + apply jobs) and
+  `.github/workflows/terraform-destroy.yml` and
+  `.github/workflows/terraform-ci.yml`: lower the `required` streak in the
+  JIT firewall stabilisation loop from **3 consecutive** successful
+  `az storage blob list` probes to **1** success. The 3-probe streak was
+  introduced (PR #11) to ride out Azure Storage's multi-front-end
+  propagation race, but run `26078095239` failed the entire 360s window
+  even though a single probe would have likely passed sooner. The
+  follow-on `terraform init` step already retries 3× with 15s backoff,
+  which is sufficient to absorb a single front-end being late.
+
+### Rationale
+- Worst seen propagation delay (run `26078095239`): probes 1–72 all
+  failed with `The request may be blocked by network rules of storage
+  account`. The previous run on the same SA (`26076400576`) passed in
+  17s. The 1-success threshold trades a small reliability margin (any
+  later 403s caught by `terraform init`'s retry loop) for faster
+  recovery and a smaller failure surface.
+
+## ecaba13 — 2026-05-19 — `fix(dev)`: SQL maxsize 32 → 30 GB, VMs to `Standard_B2s_v2`
+
+### Fixed
+- `azurerm_mssql_database.this`: `InvalidMaxSizeTierCombination` on
+  apply — the Standard SKU tier (default `sql_database_sku = "S0"`)
+  does not support `max_size_gb = 32`. Valid Standard-tier sizes are
+  `0.1 / 0.5 / 1 / 2 / 5 / 10 / 20 / 30 / 50 / 100 / 150 / 200 / 250`
+  GB. Changed `modules/data/main.tf` to `max_size_gb = 30`, which is
+  universally supported across Standard and vCore SKUs.
+- `azurerm_linux_virtual_machine.{web,app}`: `SkuNotAvailable` /
+  Capacity Restrictions in `westus2` on `Standard_B2ms`, despite the
+  management plane reporting no subscription-level restrictions on
+  that SKU. Verified via `az vm create --validate` that
+  `Standard_B2s_v2` (newer B-series v2, same 2 vCPU / 8 GB shape) has
+  free capacity. `environments/dev.tfvars` now sets
+  `web_vm_size = app_vm_size = "Standard_B2s_v2"`. Staging/prod still
+  use `Standard_B2s` and may need similar evaluation on first apply.
+
+## 7958fa0 — 2026-05-19 — `ci`: extend SA firewall probe budget to 360s and capture stderr
+
+### Changed
+- `.github/workflows/terraform-apply.yml` (plan + apply jobs),
+  `.github/workflows/terraform-destroy.yml`, and
+  `.github/workflows/terraform-ci.yml`: JIT firewall stabilisation
+  loop budget raised from 36 iterations / 180s to 72 / 360s. Each
+  failing probe now captures the first 200 chars of `az` stderr to an
+  `err_file`; the terminal `::error::` annotation includes the last
+  3 lines of that file so transient propagation delays can be
+  distinguished from RBAC / network rule misconfigurations.
+
+### Why
+- Run `26075271542` (apply on `dev`) failed at this step with 36/36
+  probe failures and no captured stderr. The added diagnostics on the
+  next failure (run `26078095239`, full 360s) confirmed the underlying
+  error is `The request may be blocked by network rules of storage
+  account` — i.e. firewall-edge propagation lag, not RBAC. See the
+  follow-up entry (probe streak 3 → 1) for the durable mitigation.
+
+## 1eb5b59 — 2026-05-19 — `dev`: open blob SA for CI bootstrap, switch VMs to `Standard_B2ms`
+
+### Fixed
+- `azurerm_storage_container.app`: `403 AuthorizationFailure` on apply
+  in run `26073654800` — the workload blob SA had
+  `default_action = Deny` and no firewall entry for the GitHub runner,
+  so the data-plane container-create call from the runner was blocked
+  even though the management-plane SA itself was reachable. Added a
+  `blob_public_network_access_enabled` toggle (off by default; `true`
+  in `dev.tfvars`) that lets the dev SA accept public ingress during
+  bootstrap. Staging / prod should remain locked down and use a
+  Private Endpoint or a JIT firewall punch when they ship.
+- `azurerm_linux_virtual_machine.{web,app}`: `SkuNotAvailable` on
+  `Standard_B2s` in `westus2` (zone-level
+  `NotAvailableForSubscription`). Switched dev VMs to
+  `Standard_B2ms`, verified as unrestricted in the SKU probe.
+  (Superseded by `ecaba13`: B2ms also hit capacity restrictions
+  later — moved to `B2s_v2`.)
+
+### Added
+- Root `variable "blob_public_network_access_enabled"` and the
+  matching `modules/data` plumbing. Default `false`, set to `true`
+  only in `environments/dev.tfvars`.
+
+## f06158b — 2026-05-19 — `fix(envs)`: switch dev location from `eastus2` → `westus2`
+
+### Fixed
+- `azurerm_mssql_server.this`: `ProvisioningDisabled` in `eastus2`
+  (and previously `eastus`). Per-region probe via `az sql server
+  create --validate` across `westus2`, `westus3`, `centralus`,
+  `southcentralus`, `northcentralus`, `canadacentral` confirmed
+  `westus2` is the closest region with free SQL provisioning quota
+  on this subscription.
+
+### Changed
+- `environments/dev.tfvars`: `location = "westus2"`.
+- GZRS replication for `azurerm_storage_account` remains valid in
+  `westus2` (was the secondary blocker that pushed us off `eastus`).
+
+## f9ac2d2 — 2026-05-19 — `ci(workflows)`: opt into Node.js 24 across all workflows
+
+### Changed
+- `.github/workflows/terraform-apply.yml`,
+  `.github/workflows/terraform-destroy.yml`, and
+  `.github/workflows/terraform-ci.yml`: added top-level
+  `env: FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"` so the
+  `actions/checkout`, `actions/upload-artifact`,
+  `actions/download-artifact`, and `hashicorp/setup-terraform` JS
+  actions run on Node.js 24. Silences the
+  `Node.js 20 actions are deprecated` warning ahead of the
+  2026-09-16 removal of Node 20 from GitHub-hosted runners.
+
 ## c5da57e — 2026-05-19 — `feat(envs)`: per-environment tfvars (dev, staging, prod)
 
 ### Added

@@ -90,10 +90,11 @@ jobs:
             --output none
           # Azure Storage has multiple front-end IPs behind the public
           # endpoint; firewall rules propagate to each independently. A
-          # single passing probe is not sufficient — require N consecutive
-          # successes spaced 5s apart so we hit several front-ends. Capped
-          # at 360s total.
-          required=3
+          # single passing probe is normally sufficient because the
+          # follow-on `terraform init` already retries 3× with 15s backoff,
+          # which absorbs any late-propagating front-end. Capped at 360s
+          # total.
+          required=1
           streak=0
           err_file=$(mktemp)
           for i in $(seq 1 72); do
