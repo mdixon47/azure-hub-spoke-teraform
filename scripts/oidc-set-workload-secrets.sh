@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Provisions workload-level GitHub secrets for the dev / dev-apply environments:
+# Provisions workload-level GitHub secrets for a <env> / <env>-apply pair:
 #   - VM_ADMIN_PASSWORD       (random, Azure VM complexity rules)
 #   - SQL_ADMIN_PASSWORD      (random, Azure SQL complexity rules)
 #   - VM_ADMIN_SSH_PUBLIC_KEY (RSA-4096; ed25519 is rejected by the azurerm
@@ -8,34 +8,42 @@
 # Values are sent to `gh secret set` over stdin (never argv/logs).
 # Re-runnable: existing SSH keypair is reused; passwords are regenerated.
 #
+# Usage:
+#   scripts/oidc-set-workload-secrets.sh [<env>] [--save-passwords]
+#
+# Defaults: <env>=dev. KEY_PATH and PW_FILE default to ~/.ssh/gh-tf-<env>-*.
+#
 # Flags:
 #   --save-passwords   Also write the generated VM and SQL passwords to
-#                      ${PW_FILE} (default ~/.ssh/gh-tf-dev-passwords.local)
+#                      ${PW_FILE} (default ~/.ssh/gh-tf-<env>-passwords.local)
 #                      with 0600 perms so they can be recovered for an
 #                      out-of-band login. File is .local — gitignored.
 #   -h, --help         Show this help.
 set -euo pipefail
 
-REPO="${REPO:-mdixon47/terraform}"
-KEY_PATH="${KEY_PATH:-$HOME/.ssh/gh-tf-dev-rsa}"
-PW_FILE="${PW_FILE:-$HOME/.ssh/gh-tf-dev-passwords.local}"
-ENVS=(dev dev-apply)
+ENV_NAME="dev"
 SAVE_PASSWORDS=0
-
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --save-passwords) SAVE_PASSWORDS=1; shift ;;
-    -h|--help) sed -n '2,16p' "$0"; exit 0 ;;
-    *) echo "unknown flag: $1" >&2; exit 2 ;;
+    -h|--help) sed -n '2,21p' "$0"; exit 0 ;;
+    --) shift; break ;;
+    -*) echo "unknown flag: $1" >&2; exit 2 ;;
+    *) ENV_NAME="$1"; shift ;;
   esac
 done
+
+REPO="${REPO:-mdixon47/terraform}"
+KEY_PATH="${KEY_PATH:-$HOME/.ssh/gh-tf-${ENV_NAME}-rsa}"
+PW_FILE="${PW_FILE:-$HOME/.ssh/gh-tf-${ENV_NAME}-passwords.local}"
+ENVS=("${ENV_NAME}" "${ENV_NAME}-apply")
 
 umask 077
 
 # ---- SSH keypair ------------------------------------------------------------
 if [[ ! -f "${KEY_PATH}" ]]; then
   ssh-keygen -t rsa -b 4096 -f "${KEY_PATH}" -N "" \
-    -C "gh-tf-dev@$(date -u +%Y%m%dT%H%M%SZ)" >/dev/null
+    -C "gh-tf-${ENV_NAME}@$(date -u +%Y%m%dT%H%M%SZ)" >/dev/null
   echo "Generated new RSA-4096 keypair at ${KEY_PATH}{,.pub}"
 else
   echo "Reusing existing keypair at ${KEY_PATH}{,.pub}"

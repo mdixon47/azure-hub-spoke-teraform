@@ -3,6 +3,43 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
+## (uncommitted) — 2026-05-18 — OIDC: onboard `staging` and `prod` + runbook
+
+### Added
+- `docs/oidc-setup.md` — step-by-step runbook for onboarding a new
+  environment: app/SP/federated credentials, RBAC, GitHub envs,
+  identity + workload secrets, verification, and troubleshooting
+  (failure modes carried over from PR #11).
+- `README.md` — "Further reading" section linking the OIDC, remote-
+  state, DevSecOps, and changes docs.
+
+### Changed
+- `scripts/oidc-grant-rbac.sh` — now also grants
+  `Storage Account Contributor` at the state SA scope (the F2 JIT
+  firewall toggle requires it). Output progress is `[1/3]…[3/3]`.
+  Idempotent on existing assignments.
+- `scripts/oidc-set-workload-secrets.sh` — accepts an `<env>`
+  positional argument (defaults to `dev`); the SSH key path and
+  passwords file follow `gh-tf-<env>-*`. The `<env>` and
+  `<env>-apply` GitHub environments receive the secrets.
+
+### Azure / GitHub side (out-of-tree, captured for the audit trail)
+- App registration `gh-tf-staging` created with two federated
+  credentials (`environment:staging`, `environment:staging-apply`).
+- App registration `gh-tf-prod` created with two federated credentials
+  (`environment:prod`, `environment:prod-apply`).
+- Both SPs granted the three F2 roles: `Contributor` @ subscription,
+  `Storage Blob Data Contributor` @ state container,
+  `Storage Account Contributor` @ state SA.
+- GitHub environments `staging`, `staging-apply`, `prod`, `prod-apply`
+  created. Identity secrets (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
+  `AZURE_SUBSCRIPTION_ID`) seeded on each.
+
+### Known limitation
+- Required-reviewers / wait-timer protection rules on `staging-apply`
+  and `prod-apply` are blocked by the GitHub free-plan billing
+  restriction for private repos (HTTP 422). Tracked under Open items.
+
 ## (PR #11) — 2026-05-18 — OIDC + JIT state-SA firewall (F2), end-to-end
 
 Smoke-tested on PR #11 (`ci/smoke-test-oidc` → `main`). Final state on
@@ -244,13 +281,14 @@ DevSecOps toolchain in CI:
   `terraform-apply` round-trip. v8 changes the `digest-mismatch` default
   from `warn` to `error` and migrates to ESM; worth validating against
   real artifacts before landing.
-- **OIDC federation for `staging` and `prod`** — `dev` is done (PR #11).
-  Repeat `scripts/oidc-create-app.sh` and `scripts/oidc-grant-rbac.sh`
-  for `gh-tf-staging` and `gh-tf-prod` and seed their environment
-  secrets. Apply pipeline requires required-reviewers on `*-apply`
-  environments.
+- **Required-reviewers on `*-apply` environments** — blocked by the
+  GitHub free-plan billing restriction for private repos. Add once the
+  plan is upgraded (or the repo is made public). Until then, manual
+  triggering of `terraform-apply` is the only gate.
 - **Orphan `cost estimate` workflow job** — superseded by the Infracost
   GitHub App (which already posts PR comments). Either delete the job
   from `terraform-ci.yml` or set `INFRACOST_API_KEY` at repo scope.
-- **`docs/oidc-setup.md`** — capture the end-to-end runbook so future
-  environments can be brought up without reverse-engineering this log.
+- **PR #6 (`download-artifact` v4 → v8)** — held pending first
+  successful `terraform-apply` round-trip. v8 changes the
+  `digest-mismatch` default from `warn` to `error` and migrates to
+  ESM; worth validating against real artifacts before landing.

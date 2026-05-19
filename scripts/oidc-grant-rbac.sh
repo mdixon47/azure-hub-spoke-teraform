@@ -2,6 +2,9 @@
 # Grants RBAC to the gh-tf-<env> service principal:
 #   - Contributor on the subscription (per decision B1)
 #   - Storage Blob Data Contributor on the state container scope
+#   - Storage Account Contributor on the state SA scope
+#     (needed by the F2 JIT firewall toggle to mutate networkRuleSet
+#      from the runner; see changes.md PR #11 entry)
 #
 # Idempotent: az role assignment create is safe to re-run (returns existing).
 #
@@ -29,11 +32,13 @@ SP_ID=$(cat "${SP_ID_FILE}")
 
 SUB_ID=$(az account show --query id -o tsv)
 SUB_SCOPE="/subscriptions/${SUB_ID}"
-CONTAINER_SCOPE="${SUB_SCOPE}/resourceGroups/${TFSTATE_RG}/providers/Microsoft.Storage/storageAccounts/${TFSTATE_SA}/blobServices/default/containers/${TFSTATE_CONTAINER}"
+SA_SCOPE="${SUB_SCOPE}/resourceGroups/${TFSTATE_RG}/providers/Microsoft.Storage/storageAccounts/${TFSTATE_SA}"
+CONTAINER_SCOPE="${SA_SCOPE}/blobServices/default/containers/${TFSTATE_CONTAINER}"
 
 echo "=== gh-tf-${ENV}: RBAC grants ==="
 echo "SP object id:    ${SP_ID}"
 echo "Subscription:    ${SUB_SCOPE}"
+echo "State SA:        ${SA_SCOPE}"
 echo "State container: ${CONTAINER_SCOPE}"
 echo
 
@@ -59,12 +64,16 @@ grant() {
   echo "      granted ${ROLE} on ${SCOPE##*/providers/}"
 }
 
-echo "[1/2] Contributor @ subscription"
+echo "[1/3] Contributor @ subscription"
 grant "Contributor" "${SUB_SCOPE}"
 
 echo
-echo "[2/2] Storage Blob Data Contributor @ state container"
+echo "[2/3] Storage Blob Data Contributor @ state container"
 grant "Storage Blob Data Contributor" "${CONTAINER_SCOPE}"
+
+echo
+echo "[3/3] Storage Account Contributor @ state SA (F2 JIT firewall)"
+grant "Storage Account Contributor" "${SA_SCOPE}"
 
 echo
 echo "=== Done: ${ENV} RBAC ==="

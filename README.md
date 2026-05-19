@@ -88,3 +88,15 @@ terraform apply
 ```bash
 terraform destroy
 ```
+
+## Further reading
+
+- [`docs/remote-state.md`](docs/remote-state.md) — bootstrapped remote
+  state backend (RG, SA, container, RBAC).
+- [`docs/oidc-setup.md`](docs/oidc-setup.md) — runbook for onboarding
+  a new environment with GitHub OIDC + the just-in-time state-SA
+  firewall toggle used by the CI workflows.
+- [`docs/devsecops.md`](docs/devsecops.md) — scanner toolchain and
+  policy gates in CI.
+- [`changes.md`](changes.md) — reverse-chronological log of notable
+  changes (architecture decisions, OIDC, failure modes resolved).
