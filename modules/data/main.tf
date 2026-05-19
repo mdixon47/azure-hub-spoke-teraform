@@ -37,7 +37,7 @@ resource "azurerm_mssql_database" "this" {
   server_id      = azurerm_mssql_server.this.id
   collation      = "SQL_Latin1_General_CP1_CI_AS"
   license_type   = "LicenseIncluded"
-  max_size_gb    = 32
+  max_size_gb    = 30
   sku_name       = var.sql_database_sku
   zone_redundant = var.sql_zone_redundant
   ledger_enabled = true

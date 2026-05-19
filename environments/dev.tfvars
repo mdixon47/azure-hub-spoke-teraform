@@ -14,10 +14,12 @@ hub_vnet_cidr   = "10.0.0.0/16"
 spoke_vnet_cidr = "10.1.0.0/16"
 
 # Compute sizing --------------------------------------------------------------
-# Standard_B2s is capacity-restricted in westus2 ("SkuNotAvailable"); B2ms
-# has no restrictions on this subscription.
-web_vm_size = "Standard_B2ms"
-app_vm_size = "Standard_B2ms"
+# Both Standard_B2s and Standard_B2ms are capacity-restricted in westus2
+# ("SkuNotAvailable: Capacity Restrictions"). B2s_v2 (newer B-series v2 family,
+# same 2 vCPU / 8 GB shape as B2ms) has free capacity and validated via
+# `az vm create --validate`.
+web_vm_size = "Standard_B2s_v2"
+app_vm_size = "Standard_B2s_v2"
 
 # Observability & lifecycle ---------------------------------------------------
 log_retention_days    = 30
