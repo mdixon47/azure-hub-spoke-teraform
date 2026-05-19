@@ -5,8 +5,10 @@ on:
     paths:
       - "**/*.tf"
       - "**/*.tfvars.example"
+      - "**/*.tfvars"
       - ".github/workflows/terraform-ci.yml"
       - ".tflint.hcl"
+      - ".checkov.yaml"
   push:
     branches: [main]
     paths:
