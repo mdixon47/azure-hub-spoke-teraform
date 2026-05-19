@@ -103,7 +103,7 @@ jobs:
             -no-color \
             -var-file="environments/${{ inputs.environment }}.tfvars" \
             -out=tfplan
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: tfplan-${{ github.run_id }}
           path: tfplan
