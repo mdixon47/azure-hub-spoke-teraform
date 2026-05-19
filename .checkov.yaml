@@ -61,3 +61,13 @@ skip-check:
   # default SKU is S0 for cost. Enable by setting sql_database_sku to a
   # supported tier and sql_zone_redundant=true.
   - CKV_AZURE_229
+  # CKV_AZURE_33: Queue logging is irrelevant for the blob SA (no queue
+  # workload). For the general SA, logging IS configured via
+  # azurerm_storage_account_queue_properties.general — checkov 3.2.527 does
+  # not resolve the separate resource and incorrectly flags the SA itself.
+  - CKV_AZURE_33
+  # CKV_AZURE_216: threat_intelligence_mode="Deny" is set on
+  # azurerm_firewall_policy (the correct location in azurerm v4). Checkov
+  # 3.2.527 still inspects azurerm_firewall, which no longer carries this
+  # attribute in v4. False positive against the provider migration.
+  - CKV_AZURE_216
