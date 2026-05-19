@@ -11,6 +11,9 @@ crash.*.log
 *.tfvars.json
 !*.tfvars.example
 !*.tfvars.example.json
+# Per-environment, non-secret tfvars consumed by terraform-apply.yml.
+# Secrets (passwords, SSH keys) come from GitHub env secrets via TF_VAR_*.
+!environments/*.tfvars
 
 # Plan artifacts
 *.tfplan
