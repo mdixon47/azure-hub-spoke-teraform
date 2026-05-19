@@ -3,34 +3,45 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
-## (pending) — 2026-05-19 — `fix(ci)`: explicit `auth-type: OIDC` on all `azure/login@v3` steps
+## (pending) — 2026-05-19 — `investigation`: `plan (dev)` login failure — root cause identified
 
-### Problem
-`plan (dev)` failed with:
-> Login failed with Error: The process '/usr/bin/az' failed with exit code 1.
-> Double check if the 'auth-type' is correct.
+### Runs
+| Run | Trigger | Result |
+|-----|---------|--------|
+| `26107951630` | Dependabot PR (`actions/checkout` 4→6) | ✗ `az` exit 1 |
+| `26113695817` | manual `workflow_dispatch` (`dev`, `auto_approve=false`) | ✗ unsupported `auth-type` |
 
-`azure/login@v3` was called with only `client-id`, `tenant-id`, and
-`subscription-id` (no `client-secret`). Without an explicit `auth-type`, the
-action must infer OIDC mode; on the `v3` release in use the inference silently
-falls back to a default that exits non-zero when no client secret is present
-and no explicit mode is declared.
+### What was tried
+Added `auth-type: OIDC` to all four `azure/login@v3` steps (run `26113695817`).
+**Result:** harder failure — `azure/login@v3` only accepts `SERVICE_PRINCIPAL`
+or `IDENTITY`; `OIDC` is not a recognised value. Change reverted.
 
-### Fixed
-- `.github/workflows/terraform-ci.yml` (plan job)
-- `.github/workflows/terraform-apply.yml` (plan job + apply job)
-- `.github/workflows/terraform-destroy.yml` (destroy job)
+### Root cause
+The `azure/login@v3` action defaults to `auth-type: SERVICE_PRINCIPAL`, which
+is correct for OIDC federation — no explicit `auth-type` override is needed or
+helpful. The underlying failure (`az` exits 1) is an OIDC token-exchange error,
+not a workflow-syntax problem.
 
-Added `auth-type: OIDC` explicitly to all four `azure/login@v3` steps so the
-action uses workload identity federation without ambiguity.
+The token exchange fails when the Azure App Registration's federated credential
+subject does not match what GitHub puts in the OIDC token. For a job with
+`environment: dev` the required subject is:
 
-### Note
-If the failure persists after this change the root cause is a missing or
-mismatched federated credential in the Azure App Registration. The required
-subject for the `dev` environment is:
-`repo:mdixon47/azure-hub-spoke-teraform:environment:dev`
-Verify under Azure Portal → App Registration → Certificates & secrets →
-Federated credentials.
+```
+repo:mdixon47/azure-hub-spoke-teraform:environment:dev
+```
+
+### Action required (Azure Portal, out-of-band)
+1. Azure Portal → **App Registrations** → `gh-tf-dev` →
+   **Certificates & secrets → Federated credentials**.
+2. Confirm an entry exists with:
+   - **Issuer**: `https://token.actions.githubusercontent.com`
+   - **Subject identifier**: `repo:mdixon47/azure-hub-spoke-teraform:environment:dev`
+   - **Audience**: `api://AzureADTokenExchange`
+3. If the subject uses a different repo slug (e.g. `mdixon47/terraform`) it
+   must be updated to `azure-hub-spoke-teraform` — the repo was renamed at
+   some point (see the `scripts/oidc-create-app.sh` default in PR #11 which
+   used `mdixon47/terraform`).
+4. Repeat for `environment:dev-apply` (used by the `apply` job).
 
 ## (pending) — 2026-05-19 — `fix(dev)`: switch VMs from `Standard_B2s_v2` → `Standard_D2als_v7` (quota exhausted)
 
