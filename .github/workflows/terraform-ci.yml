@@ -21,6 +21,10 @@ env:
   TF_VERSION: "1.9.5"
   TFLINT_VERSION: "v0.52.0"
   TF_IN_AUTOMATION: "true"
+  # Opt JS actions (checkout, download-artifact, etc.) into Node.js 24 to
+  # silence the Node.js 20 deprecation warning. Node 20 is removed from
+  # GitHub-hosted runners on 2026-09-16.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   fmt:
