@@ -43,42 +43,14 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Detect runner public IP
-        id: runner-ip
+      - name: Open state SA for terraform
         run: |
-          sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1 2>/dev/null || true
-          sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1 2>/dev/null || true
-          IP=$(curl -4 -fsSL https://api.ipify.org)
-          echo "runner IPv4: ${IP}"
-          echo "ip=${IP}" >> "$GITHUB_OUTPUT"
-      - name: Allow runner IP on state SA firewall
-        run: |
-          az storage account network-rule add \
+          az storage account update \
             --resource-group "${{ vars.TFSTATE_RG }}" \
-            --account-name "${{ vars.TFSTATE_SA }}" \
-            --ip-address "${{ steps.runner-ip.outputs.ip }}" \
+            --name "${{ vars.TFSTATE_SA }}" \
+            --default-action Allow \
             --output none
-          required=1
-          streak=0
-          err_file=$(mktemp)
-          for i in $(seq 1 72); do
-            if az storage blob list \
-                 --auth-mode login \
-                 --account-name "${{ vars.TFSTATE_SA }}" \
-                 --container-name "${{ vars.TFSTATE_CONTAINER }}" \
-                 --num-results 1 -o none 2>"$err_file"; then
-              streak=$((streak + 1))
-              echo "probe $i: ok (streak=$streak/$required)"
-              [ "$streak" -ge "$required" ] && { echo "firewall+RBAC stable after $((i*5))s"; exit 0; }
-            else
-              streak=0
-              err_detail=$(tr '\n' ' ' < "$err_file" 2>/dev/null | cut -c1-400)
-              echo "probe $i: fail (streak reset): ${err_detail:-no-stderr}"
-            fi
-            sleep 5
-          done
-          echo "::error::SA firewall did not stabilise within 360s; last error: $(tr '\n' ' ' < "$err_file" 2>/dev/null | cut -c1-400)"
-          exit 1
+          echo "state SA: defaultAction=Allow"
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ env.TF_VERSION }}
@@ -114,14 +86,15 @@ jobs:
           path: tfplan
           retention-days: 14
           if-no-files-found: error
-      - name: Remove runner IP from state SA firewall
-        if: always() && steps.runner-ip.outputs.ip != ''
+      - name: Restore state SA firewall
+        if: always()
         run: |
-          az storage account network-rule remove \
+          az storage account update \
             --resource-group "${{ vars.TFSTATE_RG }}" \
-            --account-name "${{ vars.TFSTATE_SA }}" \
-            --ip-address "${{ steps.runner-ip.outputs.ip }}" \
+            --name "${{ vars.TFSTATE_SA }}" \
+            --default-action Deny \
             --output none || true
+          echo "state SA: defaultAction=Deny restored"
 
   apply:
     name: apply (${{ inputs.environment }})
@@ -142,42 +115,14 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Detect runner public IP
-        id: runner-ip
+      - name: Open state SA for terraform
         run: |
-          sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1 2>/dev/null || true
-          sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1 2>/dev/null || true
-          IP=$(curl -4 -fsSL https://api.ipify.org)
-          echo "runner IPv4: ${IP}"
-          echo "ip=${IP}" >> "$GITHUB_OUTPUT"
-      - name: Allow runner IP on state SA firewall
-        run: |
-          az storage account network-rule add \
+          az storage account update \
             --resource-group "${{ vars.TFSTATE_RG }}" \
-            --account-name "${{ vars.TFSTATE_SA }}" \
-            --ip-address "${{ steps.runner-ip.outputs.ip }}" \
+            --name "${{ vars.TFSTATE_SA }}" \
+            --default-action Allow \
             --output none
-          required=1
-          streak=0
-          err_file=$(mktemp)
-          for i in $(seq 1 72); do
-            if az storage blob list \
-                 --auth-mode login \
-                 --account-name "${{ vars.TFSTATE_SA }}" \
-                 --container-name "${{ vars.TFSTATE_CONTAINER }}" \
-                 --num-results 1 -o none 2>"$err_file"; then
-              streak=$((streak + 1))
-              echo "probe $i: ok (streak=$streak/$required)"
-              [ "$streak" -ge "$required" ] && { echo "firewall+RBAC stable after $((i*5))s"; exit 0; }
-            else
-              streak=0
-              err_detail=$(tr '\n' ' ' < "$err_file" 2>/dev/null | cut -c1-400)
-              echo "probe $i: fail (streak reset): ${err_detail:-no-stderr}"
-            fi
-            sleep 5
-          done
-          echo "::error::SA firewall did not stabilise within 360s; last error: $(tr '\n' ' ' < "$err_file" 2>/dev/null | cut -c1-400)"
-          exit 1
+          echo "state SA: defaultAction=Allow"
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ env.TF_VERSION }}
@@ -201,11 +146,12 @@ jobs:
           exit 1
       - name: terraform apply
         run: terraform apply -input=false -no-color tfplan
-      - name: Remove runner IP from state SA firewall
-        if: always() && steps.runner-ip.outputs.ip != ''
+      - name: Restore state SA firewall
+        if: always()
         run: |
-          az storage account network-rule remove \
+          az storage account update \
             --resource-group "${{ vars.TFSTATE_RG }}" \
-            --account-name "${{ vars.TFSTATE_SA }}" \
-            --ip-address "${{ steps.runner-ip.outputs.ip }}" \
+            --name "${{ vars.TFSTATE_SA }}" \
+            --default-action Deny \
             --output none || true
+          echo "state SA: defaultAction=Deny restored"

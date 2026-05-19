@@ -80,52 +80,19 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Detect runner public IP
-        id: runner-ip
+      - name: Open state SA for terraform
         run: |
-          # Force IPv4: Azure Storage IP rules only support IPv4 CIDR notation.
-          # Disable IPv6 so all subsequent az/curl connections use the same IPv4
-          # address we register in the SA firewall. The || true prevents failure
-          # on runners where sysctl is restricted.
-          sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1 2>/dev/null || true
-          sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1 2>/dev/null || true
-          IP=$(curl -4 -fsSL https://api.ipify.org)
-          echo "runner IPv4: ${IP}"
-          echo "ip=${IP}" >> "$GITHUB_OUTPUT"
-      - name: Allow runner IP on state SA firewall
-        run: |
-          az storage account network-rule add \
+          # GitHub-hosted runners use dynamic IPs that may egress via IPv6 to
+          # Azure Storage endpoints; Storage IP allowlist rules are IPv4-only so
+          # a dynamic IP-based approach is unreliable. Instead, temporarily set
+          # defaultAction=Allow for the duration of the plan job. Entra ID auth
+          # is still enforced on every request, so no anonymous access is possible.
+          az storage account update \
             --resource-group "${{ vars.TFSTATE_RG }}" \
-            --account-name "${{ vars.TFSTATE_SA }}" \
-            --ip-address "${{ steps.runner-ip.outputs.ip }}" \
+            --name "${{ vars.TFSTATE_SA }}" \
+            --default-action Allow \
             --output none
-          # Azure Storage has multiple front-end IPs behind the public
-          # endpoint; firewall rules propagate to each independently. A
-          # single passing probe is normally sufficient because the
-          # follow-on `terraform init` already retries 3× with 15s backoff,
-          # which absorbs any late-propagating front-end. Capped at 360s
-          # total.
-          required=1
-          streak=0
-          err_file=$(mktemp)
-          for i in $(seq 1 72); do
-            if az storage blob list \
-                 --auth-mode login \
-                 --account-name "${{ vars.TFSTATE_SA }}" \
-                 --container-name "${{ vars.TFSTATE_CONTAINER }}" \
-                 --num-results 1 -o none 2>"$err_file"; then
-              streak=$((streak + 1))
-              echo "probe $i: ok (streak=$streak/$required)"
-              [ "$streak" -ge "$required" ] && { echo "firewall+RBAC stable after $((i*5))s"; exit 0; }
-            else
-              streak=0
-              err_detail=$(tr '\n' ' ' < "$err_file" 2>/dev/null | cut -c1-400)
-              echo "probe $i: fail (streak reset): ${err_detail:-no-stderr}"
-            fi
-            sleep 5
-          done
-          echo "::error::SA firewall did not stabilise within 360s; last error: $(tr '\n' ' ' < "$err_file" 2>/dev/null | cut -c1-400)"
-          exit 1
+          echo "state SA: defaultAction=Allow (will restore in cleanup step)"
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ env.TF_VERSION }}
@@ -159,14 +126,15 @@ jobs:
           path: tfplan
           retention-days: 7
           if-no-files-found: error
-      - name: Remove runner IP from state SA firewall
-        if: always() && steps.runner-ip.outputs.ip != ''
+      - name: Restore state SA firewall
+        if: always()
         run: |
-          az storage account network-rule remove \
+          az storage account update \
             --resource-group "${{ vars.TFSTATE_RG }}" \
-            --account-name "${{ vars.TFSTATE_SA }}" \
-            --ip-address "${{ steps.runner-ip.outputs.ip }}" \
+            --name "${{ vars.TFSTATE_SA }}" \
+            --default-action Deny \
             --output none || true
+          echo "state SA: defaultAction=Deny restored"
 
   infracost:
     name: cost estimate
