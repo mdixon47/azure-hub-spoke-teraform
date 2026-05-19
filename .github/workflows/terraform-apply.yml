@@ -32,8 +32,6 @@ jobs:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    outputs:
-      plan-artifact: tfplan-${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
       - uses: azure/login@v3
@@ -167,7 +165,7 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.plan.outputs.plan-artifact }}
+          name: tfplan-${{ github.run_id }}
       - name: terraform init
         run: |
           for attempt in 1 2 3; do
