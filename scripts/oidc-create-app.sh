@@ -26,7 +26,7 @@
 set -euo pipefail
 
 ENV="${1:?usage: $0 <env-name>}"
-REPO="${REPO:-mdixon47/terraform}"
+REPO="${REPO:-mdixon47/azure-hub-spoke-teraform}"
 ISSUER="https://token.actions.githubusercontent.com"
 AUDIENCE="api://AzureADTokenExchange"
 APP_NAME="gh-tf-${ENV}"

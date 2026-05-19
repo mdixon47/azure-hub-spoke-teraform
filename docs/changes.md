@@ -3,35 +3,42 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
-## (pending) — 2026-05-19 — `fix(oidc)`: correct federated credential subjects on `gh-tf-dev`
+## (pending) — 2026-05-19 — `fix(oidc)`: correct federated credential subjects — all envs + script default
 
 ### Problem
 `plan (dev)` (and `apply (dev)`) failed with `az` exit code 1 — OIDC
-token-exchange error. No workflow-YAML change was needed; the issue was in
-the Azure App Registration.
+token-exchange error. Investigation revealed the same wrong-repo-slug
+defect existed on all three environments and in the script itself.
 
 ### Root cause
-The `oidc-create-app.sh` script (PR #11) hardcoded the repo slug as
-`mdixon47/terraform`. The repo has since been renamed to
-`azure-hub-spoke-teraform`, so the two federated credentials in `gh-tf-dev`
-had wrong or swapped subjects:
+`oidc-create-app.sh` had `REPO="${REPO:-mdixon47/terraform}"` as the
+default. The repo has since been renamed to `azure-hub-spoke-teraform`.
+All six federated credentials (`dev`, `dev-apply`, `staging`,
+`staging-apply`, `prod`, `prod-apply`) were created with this old slug
+and were therefore unreachable via OIDC token exchange. In addition, the
+`dev-apply` credential subject was incorrectly set to `environment:dev`
+instead of `environment:dev-apply`, leaving that job with no valid match.
 
-| Credential name | Old subject | New subject |
-|---|---|---|
-| `github-mdixon47-terraform-env-dev` | `repo:mdixon47/terraform:environment:dev` | `repo:mdixon47/azure-hub-spoke-teraform:environment:dev` |
-| `github-mdixon47-terraform-env-dev-apply` | `repo:mdixon47/azure-hub-spoke-teraform:environment:dev` *(wrong env)* | `repo:mdixon47/azure-hub-spoke-teraform:environment:dev-apply` |
+### Fixed (Azure — `az ad app federated-credential update`)
 
-The second credential had the correct repo name but pointed at `environment:dev`
-(not `dev-apply`), leaving `apply (dev)` with no matching credential.
+| App | Credential | Old subject | New subject |
+|---|---|---|---|
+| `gh-tf-dev` | `…-env-dev` | `…mdixon47/terraform:environment:dev` | `…azure-hub-spoke-teraform:environment:dev` |
+| `gh-tf-dev` | `…-env-dev-apply` | `…azure-hub-spoke-teraform:environment:dev` | `…azure-hub-spoke-teraform:environment:dev-apply` |
+| `gh-tf-staging` | `…-env-staging` | `…mdixon47/terraform:environment:staging` | `…azure-hub-spoke-teraform:environment:staging` |
+| `gh-tf-staging` | `…-env-staging-apply` | `…mdixon47/terraform:environment:staging-apply` | `…azure-hub-spoke-teraform:environment:staging-apply` |
+| `gh-tf-prod` | `…-env-prod` | `…mdixon47/terraform:environment:prod` | `…azure-hub-spoke-teraform:environment:prod` |
+| `gh-tf-prod` | `…-env-prod-apply` | `…mdixon47/terraform:environment:prod-apply` | `…azure-hub-spoke-teraform:environment:prod-apply` |
 
-### Fixed
-Updated both credentials via `az ad app federated-credential update`
-against app object ID `9fdb8ecb-c626-43eb-aecd-0cce2cb8565e`.
-No workflow files were changed.
+### Fixed (`scripts/oidc-create-app.sh`)
+- Default `REPO` changed from `mdixon47/terraform` →
+  `mdixon47/azure-hub-spoke-teraform`. Future `./oidc-create-app.sh
+  <env>` invocations will produce correct subjects without needing
+  `REPO=… ./oidc-create-app.sh`.
 
-### Verified — run `26114963018`
+### Verified — run `26114963018` (dev)
 - `plan (dev)`: ✓ in 47s — `Plan: 0 to add, 1 to change, 0 to destroy.`
-- `apply (dev)`: ✓ in 1m26s — `Apply complete! Resources: 0 added, 1 changed, 0 destroyed.`.
+- `apply (dev)`: ✓ in 1m26s — `Apply complete! Resources: 0 added, 1 changed, 0 destroyed.`
 
 ## (pending) — 2026-05-19 — `fix(dev)`: switch VMs from `Standard_B2s_v2` → `Standard_D2als_v7` (quota exhausted)
 
