@@ -4,7 +4,7 @@
 # (TF_VAR_* env vars) so they MUST NOT appear here.
 
 prefix   = "hubspkd"
-location = "eastus"
+location = "eastus2"
 
 # Networking ------------------------------------------------------------------
 hub_vnet_cidr   = "10.0.0.0/16"
