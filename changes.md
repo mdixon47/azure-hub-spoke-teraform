@@ -3,7 +3,48 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
-## (uncommitted) — 2026-05-18 — OIDC: onboard `staging` and `prod` + runbook
+## c5da57e — 2026-05-19 — `feat(envs)`: per-environment tfvars (dev, staging, prod)
+
+### Added
+- `environments/dev.tfvars`, `environments/staging.tfvars`,
+  `environments/prod.tfvars` — non-secret inputs consumed by the
+  `terraform-apply` workflow via `-var-file=environments/<env>.tfvars`.
+  Passwords and SSH key continue to come from GitHub env secrets via
+  `TF_VAR_*` (never committed).
+
+### Choices baked in
+- Prefixes: `hubspkd` / `hubspks` / `hubspkp` (6–7 lowercase alnum).
+- Shared CIDRs across envs (`10.0.0.0/16` hub, `10.1.0.0/16` spoke) —
+  safe because each env has its own resource group + state file and
+  the VNets do not peer cross-env.
+- `enable_https = false` on all envs for the first apply: the workflow
+  JIT-opens the **state SA** firewall but not Key Vault. Until a JIT KV
+  path or private endpoint is in place, the security module would block
+  apply. Flip to `true` once that path lands.
+- `prod`: `enable_resource_locks = true`, `log_retention_in_days = 90`.
+- `dev` / `staging`: locks off, retention 30 days.
+
+### Changed
+- `.gitignore` — keep root-level `*.tfvars` ignored (so the local dev
+  override `terraform.tfvars` cannot be committed accidentally) but add
+  an explicit `!environments/*.tfvars` exception so committed env files
+  persist.
+
+### Verified
+- Local `terraform plan -var-file=environments/dev.tfvars` →
+  `Plan: 47 to add, 0 to change, 0 to destroy` (uses the locally cached
+  state — same state file the apply pipeline will use).
+
+## b9ea3d7 — 2026-05-19 — `chore(ide)`: add `cspell.json`
+
+### Added
+- `cspell.json` — whitelist of Azure/Terraform/CI domain words
+  (`vnet`, `appgw`, `azurerm`, `tfstate`, `oidc`, `rbac`, …) actually
+  used in this repo, plus `ignorePaths` for `.terraform/`, `*.tfstate*`,
+  `*.lock.hcl`, `*.sarif`, `*.pub`, `*.local`, `checkov-results/`.
+- IDE-only config; no runtime / pipeline impact.
+
+## 6b2248e — 2026-05-18 — OIDC: onboard `staging` and `prod` + runbook
 
 ### Added
 - `docs/oidc-setup.md` — step-by-step runbook for onboarding a new
@@ -281,10 +322,26 @@ DevSecOps toolchain in CI:
   `terraform-apply` round-trip. v8 changes the `digest-mismatch` default
   from `warn` to `error` and migrates to ESM; worth validating against
   real artifacts before landing.
-- **Required-reviewers on `*-apply` environments** — blocked by the
-  GitHub free-plan billing restriction for private repos. Add once the
-  plan is upgraded (or the repo is made public). Until then, manual
-  triggering of `terraform-apply` is the only gate.
+- **Gating posture on `*-apply` environments**.
+  Current state: `wait_timer = 0`, `required_reviewers = 0`,
+  `protected_branches = false` on all six envs (`dev`, `dev-apply`,
+  `staging`, `staging-apply`, `prod`, `prod-apply`). Verified via
+  `gh api /repos/mdixon47/terraform/environments/<env>`.
+  - `required_reviewers` and `wait_timer` rules return HTTP 422 on the
+    current plan because **environment protection rules on private repos
+    require GitHub Pro / Team / Enterprise** (the repo is on the free
+    plan). Tested directly: `gh api -X PUT … -F wait_timer=30` → 422
+    "Failed to create the environment protection rule. Please ensure the
+    billing plan supports the wait timer protection rule."
+  - **Compensating control until that lands:** the `terraform-apply`
+    workflow runs **only on `workflow_dispatch`** (no `push` /
+    `pull_request` triggers), so the gate is the GitHub permission to
+    trigger that workflow + select the environment. Only repo
+    admins/maintainers can do that.
+  - **When the plan is upgraded (or the repo is made public)**:
+    add `required_reviewers` to each `*-apply` env (1 reviewer is
+    enough for solo-maintainer flow; 2 for prod with a second pair of
+    eyes). Optionally add `wait_timer` (e.g., 5 min on `prod-apply`).
 - **Orphan `cost estimate` workflow job** — superseded by the Infracost
   GitHub App (which already posts PR comments). Either delete the job
   from `terraform-ci.yml` or set `INFRACOST_API_KEY` at repo scope.
