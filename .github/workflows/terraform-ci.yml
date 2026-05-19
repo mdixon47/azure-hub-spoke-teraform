@@ -110,12 +110,12 @@ jobs:
               [ "$streak" -ge "$required" ] && { echo "firewall+RBAC stable after $((i*5))s"; exit 0; }
             else
               streak=0
-              first_line=$(head -1 "$err_file" 2>/dev/null | tr -d '\r\n' | cut -c1-200)
-              echo "probe $i: fail (streak reset): ${first_line:-no-stderr}"
+              err_detail=$(tr '\n' ' ' < "$err_file" 2>/dev/null | cut -c1-400)
+              echo "probe $i: fail (streak reset): ${err_detail:-no-stderr}"
             fi
             sleep 5
           done
-          echo "::error::SA firewall did not stabilise within 360s; last error: $(head -3 "$err_file" 2>/dev/null)"
+          echo "::error::SA firewall did not stabilise within 360s; last error: $(tr '\n' ' ' < "$err_file" 2>/dev/null | cut -c1-400)"
           exit 1
       - uses: hashicorp/setup-terraform@v4
         with:
