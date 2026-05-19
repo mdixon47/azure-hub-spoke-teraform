@@ -1,0 +1,263 @@
+apply (dev)	Set up job	﻿2026-05-19T03:58:41.6650136Z Current runner version: '2.334.0'
+apply (dev)	Set up job	2026-05-19T03:58:41.6686449Z ##[group]Runner Image Provisioner
+apply (dev)	Set up job	2026-05-19T03:58:41.6687727Z Hosted Compute Agent
+apply (dev)	Set up job	2026-05-19T03:58:41.6688616Z Version: 20260213.493
+apply (dev)	Set up job	2026-05-19T03:58:41.6689725Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+apply (dev)	Set up job	2026-05-19T03:58:41.6690871Z Build Date: 2026-02-13T00:28:41Z
+apply (dev)	Set up job	2026-05-19T03:58:41.6691897Z Worker ID: {5b2ad0ad-6666-4d01-a53e-b977959b5d93}
+apply (dev)	Set up job	2026-05-19T03:58:41.6693346Z Azure Region: eastus
+apply (dev)	Set up job	2026-05-19T03:58:41.6694293Z ##[endgroup]
+apply (dev)	Set up job	2026-05-19T03:58:41.6697261Z ##[group]Operating System
+apply (dev)	Set up job	2026-05-19T03:58:41.6698230Z Ubuntu
+apply (dev)	Set up job	2026-05-19T03:58:41.6698989Z 24.04.4
+apply (dev)	Set up job	2026-05-19T03:58:41.6699861Z LTS
+apply (dev)	Set up job	2026-05-19T03:58:41.6700636Z ##[endgroup]
+apply (dev)	Set up job	2026-05-19T03:58:41.6701591Z ##[group]Runner Image
+apply (dev)	Set up job	2026-05-19T03:58:41.6703201Z Image: ubuntu-24.04
+apply (dev)	Set up job	2026-05-19T03:58:41.6704419Z Version: 20260513.135.3
+apply (dev)	Set up job	2026-05-19T03:58:41.6706170Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260513.135/images/ubuntu/Ubuntu2404-Readme.md
+apply (dev)	Set up job	2026-05-19T03:58:41.6709158Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260513.135
+apply (dev)	Set up job	2026-05-19T03:58:41.6710962Z ##[endgroup]
+apply (dev)	Set up job	2026-05-19T03:58:41.6713086Z ##[group]GITHUB_TOKEN Permissions
+apply (dev)	Set up job	2026-05-19T03:58:41.6715929Z Contents: read
+apply (dev)	Set up job	2026-05-19T03:58:41.6716955Z Metadata: read
+apply (dev)	Set up job	2026-05-19T03:58:41.6717732Z ##[endgroup]
+apply (dev)	Set up job	2026-05-19T03:58:41.6720759Z Secret source: Actions
+apply (dev)	Set up job	2026-05-19T03:58:41.6722351Z Prepare workflow directory
+apply (dev)	Set up job	2026-05-19T03:58:41.7479274Z Prepare all required actions
+apply (dev)	Set up job	2026-05-19T03:58:41.7535002Z Getting action download info
+apply (dev)	Set up job	2026-05-19T03:58:42.1508500Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+apply (dev)	Set up job	2026-05-19T03:58:42.3241354Z Download action repository 'azure/login@v3' (SHA:532459ea530d8321f2fb9bb10d1e0bcf23869a43)
+apply (dev)	Set up job	2026-05-19T03:58:42.4360859Z Download action repository 'hashicorp/setup-terraform@v4' (SHA:dfe3c3f87815947d99a8997f908cb6525fc44e9e)
+apply (dev)	Set up job	2026-05-19T03:58:42.5586693Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+apply (dev)	Set up job	2026-05-19T03:58:42.8547843Z Complete job name: apply (dev)
+apply (dev)	Run actions/checkout@v4	﻿2026-05-19T03:58:42.9346790Z ##[group]Run actions/checkout@v4
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9348099Z with:
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9348832Z   repository: mdixon47/terraform
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9350035Z   token: ***
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9350747Z   ssh-strict: true
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9351496Z   ssh-user: git
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9352247Z   persist-credentials: true
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9353338Z   clean: true
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9354112Z   sparse-checkout-cone-mode: true
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9355046Z   fetch-depth: 1
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9355799Z   fetch-tags: false
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9356572Z   show-progress: true
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9357355Z   lfs: false
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9358057Z   submodules: false
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9358839Z   set-safe-directory: true
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9359934Z env:
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9360597Z   TF_VERSION: 1.9.5
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9361365Z   TF_IN_AUTOMATION: true
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9362283Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9363461Z   ARM_USE_OIDC: true
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9364886Z   ARM_CLIENT_ID: ***
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9366256Z   ARM_TENANT_ID: ***
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9367266Z   ARM_SUBSCRIPTION_ID: ***
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:42.9368104Z ##[endgroup]
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0537667Z Syncing repository: mdixon47/terraform
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0541135Z ##[group]Getting Git version info
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0543087Z Working directory is '/home/runner/work/terraform/terraform'
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0545175Z [command]/usr/bin/git version
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0624831Z git version 2.54.0
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0653857Z ##[endgroup]
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0673073Z Temporarily overriding HOME='/home/runner/work/_temp/5712f962-dd97-4a59-9d8e-f9379cb97a37' before making global git config changes
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0681380Z Adding repository directory to the temporary git global config as a safe directory
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0689654Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/terraform/terraform
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0752108Z Deleting the contents of '/home/runner/work/terraform/terraform'
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0757743Z ##[group]Initializing the repository
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0763329Z [command]/usr/bin/git init /home/runner/work/terraform/terraform
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0887659Z hint: Using 'master' as the name for the initial branch. This default branch name
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0890872Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0894152Z hint: to use in all of your new repositories, which will suppress this warning,
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0896044Z hint: call:
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0897198Z hint:
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0898721Z hint: 	git config --global init.defaultBranch <name>
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0900632Z hint:
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0902412Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0905894Z hint: 'development'. The just-created branch can be renamed via this command:
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0908347Z hint:
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0909551Z hint: 	git branch -m <name>
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0910905Z hint:
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0913134Z hint: Disable this message with "git config set advice.defaultBranchName false"
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0916970Z Initialized empty Git repository in /home/runner/work/terraform/terraform/.git/
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0923775Z [command]/usr/bin/git remote add origin https://github.com/mdixon47/terraform
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0980421Z ##[endgroup]
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0983613Z ##[group]Disabling automatic garbage collection
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.0986464Z [command]/usr/bin/git config --local gc.auto 0
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.1020282Z ##[endgroup]
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.1023325Z ##[group]Setting up auth
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.1028016Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.1070746Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.1451544Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.1490332Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.1737196Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.1779295Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.2042091Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.2084629Z ##[endgroup]
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.2087470Z ##[group]Fetching the repository
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.2098369Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +1eb5b5984f6fa83fd8e5475cd812de4682c8bc87:refs/remotes/origin/main
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4475335Z From https://github.com/mdixon47/terraform
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4478423Z  * [new ref]         1eb5b5984f6fa83fd8e5475cd812de4682c8bc87 -> origin/main
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4510092Z ##[endgroup]
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4512671Z ##[group]Determining the checkout info
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4515949Z ##[endgroup]
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4517881Z [command]/usr/bin/git sparse-checkout disable
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4578459Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4619533Z ##[group]Checking out the ref
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4623773Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4711178Z Switched to a new branch 'main'
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4714199Z branch 'main' set up to track 'origin/main'.
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4726118Z ##[endgroup]
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4767522Z [command]/usr/bin/git log -1 --format=%H
+apply (dev)	Run actions/checkout@v4	2026-05-19T03:58:43.4794427Z 1eb5b5984f6fa83fd8e5475cd812de4682c8bc87
+apply (dev)	Run azure/login@v3	﻿2026-05-19T03:58:43.5100580Z ##[group]Run azure/login@v3
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5101601Z with:
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5102617Z   client-id: ***
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5104054Z   tenant-id: ***
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5105097Z   subscription-id: ***
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5106003Z   enable-AzPSSession: false
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5106958Z   environment: azurecloud
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5107913Z   allow-no-subscriptions: false
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5108974Z   audience: api://AzureADTokenExchange
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5110081Z   auth-type: SERVICE_PRINCIPAL
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5111016Z env:
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5111738Z   TF_VERSION: 1.9.5
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5112576Z   TF_IN_AUTOMATION: true
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5113708Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5114786Z   ARM_USE_OIDC: true
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5115782Z   ARM_CLIENT_ID: ***
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5116776Z   ARM_TENANT_ID: ***
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5117874Z   ARM_SUBSCRIPTION_ID: ***
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5118788Z ##[endgroup]
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:43.5593525Z Running Azure CLI Login.
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:45.3334164Z [command]/usr/bin/az cloud set -n azurecloud
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:45.7252328Z Done setting cloud: "azurecloud"
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:45.8134776Z Federated token details:
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:45.8135829Z  issuer - https://token.actions.githubusercontent.com
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:45.8136798Z  subject claim - repo:mdixon47/terraform:environment:dev-apply
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:45.8137686Z  audience - api://AzureADTokenExchange
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:45.8138852Z  job_workflow_ref - mdixon47/terraform/.github/workflows/terraform-apply.yml@refs/heads/main
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:45.8140109Z Attempting Azure CLI login by using OIDC...
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:46.9954114Z Subscription is set successfully.
+apply (dev)	Run azure/login@v3	2026-05-19T03:58:46.9955372Z Azure CLI login succeeds by using OIDC.
+apply (dev)	Detect runner public IP	﻿2026-05-19T03:58:47.0147603Z ##[group]Run echo "ip=$(curl -fsSL https://api.ipify.org)" >> "$GITHUB_OUTPUT"
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0148679Z ^[[36;1mecho "ip=$(curl -fsSL https://api.ipify.org)" >> "$GITHUB_OUTPUT"^[[0m
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0205099Z shell: /usr/bin/bash -e {0}
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0205532Z env:
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0205834Z   TF_VERSION: 1.9.5
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0206180Z   TF_IN_AUTOMATION: true
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0206560Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0206966Z   ARM_USE_OIDC: true
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0207671Z   ARM_CLIENT_ID: ***
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0208135Z   ARM_TENANT_ID: ***
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0208593Z   ARM_SUBSCRIPTION_ID: ***
+apply (dev)	Detect runner public IP	2026-05-19T03:58:47.0208957Z ##[endgroup]
+apply (dev)	Allow runner IP on state SA firewall	﻿2026-05-19T03:58:47.1219132Z ##[group]Run az storage account network-rule add \
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1219597Z ^[[36;1maz storage account network-rule add \^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1219934Z ^[[36;1m  --resource-group "tfstate-rg" \^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1220283Z ^[[36;1m  --account-name "tfstate066541de13d8e2" \^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1220585Z ^[[36;1m  --ip-address "57.151.123.240" \^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1220860Z ^[[36;1m  --output none^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1221107Z ^[[36;1mrequired=3^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1221331Z ^[[36;1mstreak=0^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1221573Z ^[[36;1mfor i in $(seq 1 36); do^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1221831Z ^[[36;1m  if az storage blob list \^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1222095Z ^[[36;1m       --auth-mode login \^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1222392Z ^[[36;1m       --account-name "tfstate066541de13d8e2" \^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1223022Z ^[[36;1m       --container-name "tfstate" \^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1223380Z ^[[36;1m       --num-results 1 -o none 2>/dev/null; then^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1223685Z ^[[36;1m    streak=$((streak + 1))^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1224032Z ^[[36;1m    echo "probe $i: ok (streak=$streak/$required)"^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1224490Z ^[[36;1m    [ "$streak" -ge "$required" ] && { echo "firewall+RBAC stable after $((i*5))s"; exit 0; }^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1224910Z ^[[36;1m  else^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1225103Z ^[[36;1m    streak=0^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1225345Z ^[[36;1m    echo "probe $i: fail (streak reset)"^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1225860Z ^[[36;1m  fi^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1226050Z ^[[36;1m  sleep 5^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1226243Z ^[[36;1mdone^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1226511Z ^[[36;1mecho "::error::SA firewall did not stabilise within 180s"^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1226832Z ^[[36;1mexit 1^[[0m
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1269539Z shell: /usr/bin/bash -e {0}
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1269928Z env:
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1270193Z   TF_VERSION: 1.9.5
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1270499Z   TF_IN_AUTOMATION: true
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1270856Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1271266Z   ARM_USE_OIDC: true
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1271748Z   ARM_CLIENT_ID: ***
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1272129Z   ARM_TENANT_ID: ***
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1272570Z   ARM_SUBSCRIPTION_ID: ***
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:47.1273184Z ##[endgroup]
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:51.4398563Z probe 1: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:58:57.2354000Z probe 2: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:59:02.9668886Z probe 3: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:59:08.6910666Z probe 4: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:59:14.4437197Z probe 5: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:59:20.2486492Z probe 6: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:59:25.9897478Z probe 7: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:59:31.7345924Z probe 8: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:59:37.4773365Z probe 9: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:59:43.2204511Z probe 10: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:59:48.9504626Z probe 11: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T03:59:54.6880681Z probe 12: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:00.4950848Z probe 13: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:06.2325610Z probe 14: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:11.9918949Z probe 15: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:17.7232651Z probe 16: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:23.5026976Z probe 17: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:29.2557846Z probe 18: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:34.9973835Z probe 19: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:40.7505253Z probe 20: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:46.4971195Z probe 21: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:52.2160819Z probe 22: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:00:57.9687443Z probe 23: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:01:03.6969765Z probe 24: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:01:09.4238855Z probe 25: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:01:15.1523572Z probe 26: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:01:20.8644765Z probe 27: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:01:26.6243529Z probe 28: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:01:32.3765169Z probe 29: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:01:38.0842243Z probe 30: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:01:43.8011998Z probe 31: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:01:49.5203730Z probe 32: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:01:55.2546491Z probe 33: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:02:00.9973621Z probe 34: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:02:06.7542650Z probe 35: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:02:12.4802032Z probe 36: fail (streak reset)
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:02:17.4851359Z ##[error]SA firewall did not stabilise within 180s
+apply (dev)	Allow runner IP on state SA firewall	2026-05-19T04:02:17.4860916Z ##[error]Process completed with exit code 1.
+apply (dev)	Remove runner IP from state SA firewall	﻿2026-05-19T04:02:17.4930851Z ##[group]Run az storage account network-rule remove \
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4931260Z ^[[36;1maz storage account network-rule remove \^[[0m
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4931583Z ^[[36;1m  --resource-group "tfstate-rg" \^[[0m
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4931889Z ^[[36;1m  --account-name "tfstate066541de13d8e2" \^[[0m
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4932191Z ^[[36;1m  --ip-address "57.151.123.240" \^[[0m
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4932451Z ^[[36;1m  --output none || true^[[0m
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4965425Z shell: /usr/bin/bash -e {0}
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4965657Z env:
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4965835Z   TF_VERSION: 1.9.5
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4966041Z   TF_IN_AUTOMATION: true
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4966284Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4966546Z   ARM_USE_OIDC: true
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4966854Z   ARM_CLIENT_ID: ***
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4967103Z   ARM_TENANT_ID: ***
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4967375Z   ARM_SUBSCRIPTION_ID: ***
+apply (dev)	Remove runner IP from state SA firewall	2026-05-19T04:02:17.4967594Z ##[endgroup]
+apply (dev)	Post Run azure/login@v3	﻿2026-05-19T04:02:19.3861791Z Post job cleanup.
+apply (dev)	Post Run azure/login@v3	2026-05-19T04:02:19.4502518Z Clearing azure cli accounts from the local cache.
+apply (dev)	Post Run azure/login@v3	2026-05-19T04:02:19.4512571Z [command]/usr/bin/az account clear
+apply (dev)	Post Run actions/checkout@v4	﻿2026-05-19T04:02:20.0601599Z Post job cleanup.
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.1858448Z [command]/usr/bin/git version
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.1899823Z git version 2.54.0
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.1971124Z Temporarily overriding HOME='/home/runner/work/_temp/3d62c231-b405-4c72-9aa3-da3527ddfaae' before making global git config changes
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.1972666Z Adding repository directory to the temporary git global config as a safe directory
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.1978577Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/terraform/terraform
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.2018327Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.2055770Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.2297710Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.2327007Z http.https://github.com/.extraheader
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.2338745Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.2373057Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.2631053Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apply (dev)	Post Run actions/checkout@v4	2026-05-19T04:02:20.2700718Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apply (dev)	Complete job	﻿2026-05-19T04:02:20.3222896Z Cleaning up orphan processes
+apply (dev)	Complete job	2026-05-19T04:02:20.3495713Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

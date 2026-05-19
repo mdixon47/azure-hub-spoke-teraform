@@ -1,0 +1,85 @@
+apply (dev)	terraform apply	﻿2026-05-19T04:36:18.9721021Z ##[group]Run terraform apply -input=false -no-color tfplan
+apply (dev)	terraform apply	2026-05-19T04:36:18.9721776Z ^[[36;1mterraform apply -input=false -no-color tfplan^[[0m
+apply (dev)	terraform apply	2026-05-19T04:36:18.9759311Z shell: /usr/bin/bash -e {0}
+apply (dev)	terraform apply	2026-05-19T04:36:18.9759568Z env:
+apply (dev)	terraform apply	2026-05-19T04:36:18.9759965Z   TF_VERSION: 1.9.5
+apply (dev)	terraform apply	2026-05-19T04:36:18.9760172Z   TF_IN_AUTOMATION: true
+apply (dev)	terraform apply	2026-05-19T04:36:18.9760420Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+apply (dev)	terraform apply	2026-05-19T04:36:18.9760691Z   ARM_USE_OIDC: true
+apply (dev)	terraform apply	2026-05-19T04:36:18.9761028Z   ARM_CLIENT_ID: ***
+apply (dev)	terraform apply	2026-05-19T04:36:18.9761294Z   ARM_TENANT_ID: ***
+apply (dev)	terraform apply	2026-05-19T04:36:18.9761567Z   ARM_SUBSCRIPTION_ID: ***
+apply (dev)	terraform apply	2026-05-19T04:36:18.9761928Z   TERRAFORM_CLI_PATH: /home/runner/work/_temp/ecf40142-ba0a-401c-b4da-c540e34ee127
+apply (dev)	terraform apply	2026-05-19T04:36:18.9762322Z ##[endgroup]
+apply (dev)	terraform apply	2026-05-19T04:36:20.9420217Z Acquiring state lock. This may take a few moments...
+apply (dev)	terraform apply	2026-05-19T04:36:33.3151525Z module.networking.azurerm_virtual_network_peering.spoke_to_hub: Creating...
+apply (dev)	terraform apply	2026-05-19T04:36:33.3205597Z module.data.azurerm_private_dns_zone_virtual_network_link.sql: Creating...
+apply (dev)	terraform apply	2026-05-19T04:36:33.3335531Z module.data.azurerm_mssql_server.this: Creating...
+apply (dev)	terraform apply	2026-05-19T04:36:33.3495501Z module.spoke_compute.azurerm_linux_virtual_machine.app: Creating...
+apply (dev)	terraform apply	2026-05-19T04:36:33.3532354Z module.spoke_compute.azurerm_linux_virtual_machine.web: Creating...
+apply (dev)	terraform apply	2026-05-19T04:36:33.3645845Z module.data.azurerm_storage_account.blob: Modifying... [id=/subscriptions/***/resourceGroups/hubspkd-rg/providers/Microsoft.Storage/storageAccounts/hubspkdblobzdltzn]
+apply (dev)	terraform apply	2026-05-19T04:36:43.3209507Z module.networking.azurerm_virtual_network_peering.spoke_to_hub: Still creating... [10s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:36:43.3210770Z module.data.azurerm_private_dns_zone_virtual_network_link.sql: Still creating... [10s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:36:43.3329756Z module.data.azurerm_mssql_server.this: Still creating... [10s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:36:43.3657062Z module.data.azurerm_storage_account.blob: Still modifying... [id=/subscriptions/2afdabf1-1767-4a37-af66-...rage/storageAccounts/hubspkdblobzdltzn, 10s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:36:49.3187037Z module.data.azurerm_storage_account.blob: Modifications complete after 16s [id=/subscriptions/***/resourceGroups/hubspkd-rg/providers/Microsoft.Storage/storageAccounts/hubspkdblobzdltzn]
+apply (dev)	terraform apply	2026-05-19T04:36:49.3208169Z module.data.azurerm_storage_container.app: Creating...
+apply (dev)	terraform apply	2026-05-19T04:36:49.6395913Z module.data.azurerm_storage_container.app: Creation complete after 1s [id=https://hubspkdblobzdltzn.blob.core.windows.net/app-data]
+apply (dev)	terraform apply	2026-05-19T04:36:53.3220538Z module.data.azurerm_private_dns_zone_virtual_network_link.sql: Still creating... [20s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:36:53.3222163Z module.networking.azurerm_virtual_network_peering.spoke_to_hub: Still creating... [20s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:36:53.3340734Z module.data.azurerm_mssql_server.this: Still creating... [20s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:37:00.9390270Z module.networking.azurerm_virtual_network_peering.spoke_to_hub: Creation complete after 28s [id=/subscriptions/***/resourceGroups/hubspkd-rg/providers/Microsoft.Network/virtualNetworks/hubspkd-spoke-vnet/virtualNetworkPeerings/hubspkd-spoke-vnet-to-hubspkd-hub-vnet]
+apply (dev)	terraform apply	2026-05-19T04:37:03.3222162Z module.data.azurerm_private_dns_zone_virtual_network_link.sql: Still creating... [30s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:37:03.3343202Z module.data.azurerm_mssql_server.this: Still creating... [30s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:37:06.8378205Z module.data.azurerm_private_dns_zone_virtual_network_link.sql: Creation complete after 34s [id=/subscriptions/***/resourceGroups/hubspkd-rg/providers/Microsoft.Network/privateDnsZones/privatelink.database.windows.net/virtualNetworkLinks/hubspkd-sql-dnslink]
+apply (dev)	terraform apply	2026-05-19T04:37:13.3350292Z module.data.azurerm_mssql_server.this: Still creating... [40s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:37:23.3358107Z module.data.azurerm_mssql_server.this: Still creating... [50s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:37:33.3367000Z module.data.azurerm_mssql_server.this: Still creating... [1m0s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:37:36.3448624Z module.data.azurerm_mssql_server.this: Creation complete after 1m3s [id=/subscriptions/***/resourceGroups/hubspkd-rg/providers/Microsoft.Sql/servers/hubspkd-sql-zdltzn]
+apply (dev)	terraform apply	2026-05-19T04:37:36.9405812Z module.data.azurerm_mssql_server_extended_auditing_policy.this: Creating...
+apply (dev)	terraform apply	2026-05-19T04:37:36.9445553Z module.data.azurerm_private_endpoint.sql: Creating...
+apply (dev)	terraform apply	2026-05-19T04:37:36.9463154Z module.data.azurerm_mssql_database.this: Creating...
+apply (dev)	terraform apply	2026-05-19T04:37:46.9399454Z module.data.azurerm_mssql_server_extended_auditing_policy.this: Still creating... [10s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:37:46.9459753Z module.data.azurerm_private_endpoint.sql: Still creating... [10s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:37:56.9405677Z module.data.azurerm_mssql_server_extended_auditing_policy.this: Still creating... [20s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:37:56.9465744Z module.data.azurerm_private_endpoint.sql: Still creating... [20s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:38:06.9413386Z module.data.azurerm_mssql_server_extended_auditing_policy.this: Still creating... [30s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:38:06.9473580Z module.data.azurerm_private_endpoint.sql: Still creating... [30s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:38:16.9419152Z module.data.azurerm_mssql_server_extended_auditing_policy.this: Still creating... [40s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:38:16.9478365Z module.data.azurerm_private_endpoint.sql: Still creating... [40s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:38:26.9421894Z module.data.azurerm_mssql_server_extended_auditing_policy.this: Still creating... [50s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:38:26.9482059Z module.data.azurerm_private_endpoint.sql: Still creating... [50s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:38:33.3313262Z module.data.azurerm_private_endpoint.sql: Creation complete after 56s [id=/subscriptions/***/resourceGroups/hubspkd-rg/providers/Microsoft.Network/privateEndpoints/hubspkd-sql-pe]
+apply (dev)	terraform apply	2026-05-19T04:38:36.9427062Z module.data.azurerm_mssql_server_extended_auditing_policy.this: Still creating... [1m0s elapsed]
+apply (dev)	terraform apply	2026-05-19T04:38:38.2122400Z module.data.azurerm_mssql_server_extended_auditing_policy.this: Creation complete after 1m1s [id=/subscriptions/***/resourceGroups/hubspkd-rg/providers/Microsoft.Sql/servers/hubspkd-sql-zdltzn/extendedAuditingSettings/default]
+apply (dev)	terraform apply	2026-05-19T04:38:38.7867499Z 
+apply (dev)	terraform apply	2026-05-19T04:38:38.7868825Z Error: creating Database (Subscription: "***"
+apply (dev)	terraform apply	2026-05-19T04:38:38.7869853Z Resource Group Name: "hubspkd-rg"
+apply (dev)	terraform apply	2026-05-19T04:38:38.7870803Z Server Name: "hubspkd-sql-zdltzn"
+apply (dev)	terraform apply	2026-05-19T04:38:38.7873075Z Database Name: "hubspkd-appdb"): performing CreateOrUpdate: unexpected status 400 (400 Bad Request) with error: InvalidMaxSizeTierCombination: The tier 'Standard' does not support the database max size '34359738368'.
+apply (dev)	terraform apply	2026-05-19T04:38:38.7874836Z 
+apply (dev)	terraform apply	2026-05-19T04:38:38.7875538Z   with module.data.azurerm_mssql_database.this,
+apply (dev)	terraform apply	2026-05-19T04:38:38.7876702Z   on modules/data/main.tf line 35, in resource "azurerm_mssql_database" "this":
+apply (dev)	terraform apply	2026-05-19T04:38:38.7877849Z   35: resource "azurerm_mssql_database" "this" {
+apply (dev)	terraform apply	2026-05-19T04:38:38.7878401Z 
+apply (dev)	terraform apply	2026-05-19T04:38:38.7884936Z 
+apply (dev)	terraform apply	2026-05-19T04:38:38.7887774Z Error: creating Linux Virtual Machine (Subscription: "***"
+apply (dev)	terraform apply	2026-05-19T04:38:38.7888788Z Resource Group Name: "hubspkd-rg"
+apply (dev)	terraform apply	2026-05-19T04:38:38.7891769Z Virtual Machine Name: "hubspkd-web-vm"): performing CreateOrUpdate: unexpected status 409 (409 Conflict) with error: SkuNotAvailable: The requested VM size for resource 'Following SKUs have failed for Capacity Restrictions: Standard_B2ms' is currently not available in location 'westus2'. Please try another size or deploy to a different location or different zone. See https://aka.ms/azureskunotavailable for details.
+apply (dev)	terraform apply	2026-05-19T04:38:38.7894634Z 
+apply (dev)	terraform apply	2026-05-19T04:38:38.7895383Z   with module.spoke_compute.azurerm_linux_virtual_machine.web,
+apply (dev)	terraform apply	2026-05-19T04:38:38.7896674Z   on modules/spoke-compute/main.tf line 148, in resource "azurerm_linux_virtual_machine" "web":
+apply (dev)	terraform apply	2026-05-19T04:38:38.7897952Z  148: resource "azurerm_linux_virtual_machine" "web" {
+apply (dev)	terraform apply	2026-05-19T04:38:38.7898757Z 
+apply (dev)	terraform apply	2026-05-19T04:38:38.7907452Z 
+apply (dev)	terraform apply	2026-05-19T04:38:38.7908927Z Error: creating Linux Virtual Machine (Subscription: "***"
+apply (dev)	terraform apply	2026-05-19T04:38:38.7911635Z Resource Group Name: "hubspkd-rg"
+apply (dev)	terraform apply	2026-05-19T04:38:38.7914513Z Virtual Machine Name: "hubspkd-app-vm"): performing CreateOrUpdate: unexpected status 409 (409 Conflict) with error: SkuNotAvailable: The requested VM size for resource 'Following SKUs have failed for Capacity Restrictions: Standard_B2ms' is currently not available in location 'westus2'. Please try another size or deploy to a different location or different zone. See https://aka.ms/azureskunotavailable for details.
+apply (dev)	terraform apply	2026-05-19T04:38:38.7917464Z 
+apply (dev)	terraform apply	2026-05-19T04:38:38.7917645Z   with module.spoke_compute.azurerm_linux_virtual_machine.app,
+apply (dev)	terraform apply	2026-05-19T04:38:38.7918151Z   on modules/spoke-compute/main.tf line 199, in resource "azurerm_linux_virtual_machine" "app":
+apply (dev)	terraform apply	2026-05-19T04:38:38.7918623Z  199: resource "azurerm_linux_virtual_machine" "app" {
+apply (dev)	terraform apply	2026-05-19T04:38:38.7918832Z 
+apply (dev)	terraform apply	2026-05-19T04:38:39.1919673Z Releasing state lock. This may take a few moments...
+apply (dev)	terraform apply	2026-05-19T04:38:39.5300216Z ##[error]Terraform exited with code 1.
+apply (dev)	terraform apply	2026-05-19T04:38:39.5354056Z ##[error]Process completed with exit code 1.

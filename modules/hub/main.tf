@@ -83,7 +83,6 @@ resource "azurerm_firewall" "this" {
   sku_name            = "AZFW_VNet"
   sku_tier            = var.firewall_sku_tier
   firewall_policy_id  = azurerm_firewall_policy.this.id
-  threat_intel_mode   = "Deny"
   tags                = var.tags
 
   ip_configuration {
@@ -402,7 +401,7 @@ resource "azurerm_monitor_diagnostic_setting" "firewall" {
     category_group = "allLogs"
   }
 
-  metric {
+  enabled_metric {
     category = "AllMetrics"
   }
 }
@@ -416,7 +415,7 @@ resource "azurerm_monitor_diagnostic_setting" "appgw" {
     category_group = "allLogs"
   }
 
-  metric {
+  enabled_metric {
     category = "AllMetrics"
   }
 }
@@ -430,7 +429,7 @@ resource "azurerm_monitor_diagnostic_setting" "bastion" {
     category_group = "allLogs"
   }
 
-  metric {
+  enabled_metric {
     category = "AllMetrics"
   }
 }

@@ -49,7 +49,6 @@ resource "azurerm_mssql_server_extended_auditing_policy" "this" {
   server_id              = azurerm_mssql_server.this.id
   log_monitoring_enabled = true
   retention_in_days      = 90
-  enabled                = true
 }
 
 ###############################################################################
@@ -116,7 +115,7 @@ resource "azurerm_storage_account" "blob" {
 
 resource "azurerm_storage_container" "app" {
   name                  = "app-data"
-  storage_account_name  = azurerm_storage_account.blob.name
+  storage_account_id    = azurerm_storage_account.blob.id
   container_access_type = "private"
 }
 
@@ -141,15 +140,17 @@ resource "azurerm_storage_account" "general" {
     bypass                     = ["AzureServices"]
     virtual_network_subnet_ids = var.allowed_subnet_ids
   }
+}
 
-  queue_properties {
-    logging {
-      delete                = true
-      read                  = true
-      write                 = true
-      version               = "1.0"
-      retention_policy_days = 10
-    }
+resource "azurerm_storage_account_queue_properties" "general" {
+  storage_account_id = azurerm_storage_account.general.id
+
+  logging {
+    delete                = true
+    read                  = true
+    write                 = true
+    version               = "1.0"
+    retention_policy_days = 10
   }
 }
 
@@ -165,7 +166,7 @@ resource "azurerm_monitor_diagnostic_setting" "sql_db" {
     category_group = "audit"
   }
 
-  metric {
+  enabled_metric {
     category = "AllMetrics"
   }
 }

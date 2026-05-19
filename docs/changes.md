@@ -3,6 +3,74 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
+## (pending) — 2026-05-19 — `chore(deps)`: bump azurerm provider 3.117.1 → `~> 4.x` and clear deprecations
+
+### Changed
+- `providers.tf` and all `modules/*/versions.tf` (5 files): version constraint
+  `~> 3.100` → `~> 4.0`. Lock file regenerated at `4.73.0` for `linux_amd64`,
+  `darwin_amd64`, and `darwin_arm64`.
+
+### Fixed (breaking changes in azurerm v4)
+- `modules/data/main.tf` — `azurerm_storage_container.app`: `storage_account_name`
+  removed in v4; replaced with `storage_account_id`.
+- `modules/data/main.tf` — `azurerm_storage_account.general`: `queue_properties`
+  inline block removed in v4; extracted to new
+  `azurerm_storage_account_queue_properties.general` resource (same logging config).
+- `modules/data/main.tf` — `azurerm_mssql_server_extended_auditing_policy.this`:
+  `enabled` attribute removed in v4; attribute dropped (resource presence implies
+  enabled).
+- `modules/hub/main.tf` — `azurerm_firewall.this`: `threat_intel_mode` removed in v4
+  (must live on the policy only); attribute dropped. `azurerm_firewall_policy.this`
+  already carries `threat_intelligence_mode = "Deny"`.
+
+### Fixed (v4 deprecations, removed in v5)
+- `modules/data/main.tf` + `modules/hub/main.tf` — `azurerm_monitor_diagnostic_setting`
+  (4 resources): `metric` block renamed to `enabled_metric`.
+- `modules/security/main.tf` — `azurerm_key_vault.this`: `enable_rbac_authorization`
+  renamed to `rbac_authorization_enabled`.
+
+### Verified
+- `terraform validate` → `Success! The configuration is valid.` (zero warnings,
+  zero errors) against `azurerm 4.73.0`.
+
+## a6713f0 — 2026-05-19 — `build(deps)`: bump `actions/checkout` 4 → 6 (Dependabot #15)
+
+### Changed
+- `.github/workflows/security.yml` (5 refs), `.github/workflows/terraform-apply.yml`
+  (2 refs), `.github/workflows/terraform-ci.yml` (5 refs),
+  `.github/workflows/terraform-destroy.yml` (1 ref): `actions/checkout@v4` →
+  `@v6`. Required a Dependabot rebase after PRs #12, #14, #6, and #13 merged
+  ahead of it; no input/output schema change.
+
+## fd4fdfe — 2026-05-19 — `build(deps)`: bump `actions/upload-artifact` 4 → 7 (Dependabot #13)
+
+### Changed
+- `.github/workflows/security.yml` (4 refs), `.github/workflows/terraform-apply.yml`
+  (1 ref), `.github/workflows/terraform-ci.yml` (1 ref): `upload-artifact@v4` →
+  `@v7`. Remains in the v4+ Artifact API generation; compatible with
+  `download-artifact` at any v4+ version including v8.
+
+## cfbaa5f — 2026-05-19 — `build(deps)`: bump `actions/download-artifact` 4 → 8 (Dependabot #6)
+
+### Changed
+- `.github/workflows/terraform-apply.yml` (1 ref): `download-artifact@v4` →
+  `@v8`. Clears the hold noted in `983a2d6`; the `digest-mismatch` default
+  change (`warn` → `error`) and ESM migration are consistent with
+  `upload-artifact@v7` (latest available — no v8 upload-artifact exists).
+  Merged immediately after `upload-artifact` bump (#13) to keep the
+  tfplan upload/download pair in the same API generation.
+
+## 14c9899 — 2026-05-19 — `build(deps)`: bump `infracost/actions` 3 → 4 (Dependabot #14)
+
+### Changed
+- `.github/workflows/terraform-ci.yml` (1 ref): `infracost/actions/setup@v3` →
+  `@v4`.
+
+## 1074a3b — 2026-05-19 — `build(deps)`: bump `terraform-linters/setup-tflint` 4 → 6 (Dependabot #12)
+
+### Changed
+- `.github/workflows/terraform-ci.yml` (1 ref): `setup-tflint@v4` → `@v6`.
+
 ## (pending) — 2026-05-19 — `ci`: relax SA firewall probe streak 3 → 1
 
 ### Changed
@@ -430,10 +498,6 @@ DevSecOps toolchain in CI:
 
 ## Open items
 
-- PR #6 (`download-artifact` v4 → v8): held pending first successful
-  `terraform-apply` round-trip. v8 changes the `digest-mismatch` default
-  from `warn` to `error` and migrates to ESM; worth validating against
-  real artifacts before landing.
 - **Gating posture on `*-apply` environments**.
   Current state: `wait_timer = 0`, `required_reviewers = 0`,
   `protected_branches = false` on all six envs (`dev`, `dev-apply`,
@@ -457,7 +521,3 @@ DevSecOps toolchain in CI:
 - **Orphan `cost estimate` workflow job** — superseded by the Infracost
   GitHub App (which already posts PR comments). Either delete the job
   from `terraform-ci.yml` or set `INFRACOST_API_KEY` at repo scope.
-- **PR #6 (`download-artifact` v4 → v8)** — held pending first
-  successful `terraform-apply` round-trip. v8 changes the
-  `digest-mismatch` default from `warn` to `error` and migrates to
-  ESM; worth validating against real artifacts before landing.
