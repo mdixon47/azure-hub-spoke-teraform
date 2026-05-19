@@ -3,7 +3,86 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
-## (pending) — 2026-05-19 — `fix(oidc)`: correct federated credential subjects — all envs + script default
+## 78bc418 — 2026-05-19 — `fix(ci)`: replace IP-probe SA firewall pattern with `defaultAction` toggle (PR #18)
+
+### Problem
+The JIT firewall probe loop (detect runner IP → add IP rule → probe until propagation → remove
+rule) fails on GitHub-hosted runners when egress to `blob.core.windows.net` uses IPv6. Azure
+Storage IP allowlist rules only accept IPv4 CIDRs, so the registered IP never matches and all
+72 probes return *"The request may be blocked by network rules of storage account"*. A prior
+attempt to force IPv4 via `sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1` (PR #17 commit
+`98cf536`) resolved one run but was unreliable across different runner allocations.
+
+### Fixed
+All three workflow files (`terraform-ci.yml`, `terraform-apply.yml`, `terraform-destroy.yml`):
+replaced the four-step IP probe pattern with a simpler open / restore toggle:
+
+- **Open** (before `terraform init`): `az storage account update --default-action Allow`
+- **Restore** (`if: always()` cleanup): `az storage account update --default-action Deny`
+
+Entra ID authentication is still required on every storage request; no anonymous access is
+possible during the ~1–2 minute open window. The `|| true` on the restore step prevents a
+failed cleanup from masking a real job failure.
+
+### Verified — PR #18, run `26129544500`
+- `terraform plan`: ✓ in 48s — no SA firewall error
+- All checks (fmt, validate, tflint, security scanners) green
+
+---
+
+## 97e406b — 2026-05-19 — `fix(ci)`: SA firewall diagnostics, checkov suppressions, CI fixes (PR #17)
+
+Commits: `346b828` → `4a711d5` → `3f464a8` → `9512007` → `98cf536`
+
+### Fixed — checkov false positives (`346b828`)
+`.checkov.yaml`: two new suppressions with documented justification:
+- `CKV_AZURE_33`: blob SA has no queue workload; queue logging on the general SA is configured
+  via a separate `azurerm_storage_account_queue_properties` resource that checkov 3.2.527 does
+  not resolve — false positive on both SAs.
+- `CKV_AZURE_216`: `threat_intelligence_mode = "Deny"` is correctly set on
+  `azurerm_firewall_policy` (required by azurerm v4); checkov 3.2.527 still inspects
+  `azurerm_firewall`, which no longer carries this attribute in v4 — false positive.
+
+Local result after suppression: **51 passed / 0 failed / 0 skipped**.
+
+### Fixed — CI path filter (`4a711d5`)
+`terraform-ci.yml` PR trigger: path filter now includes `.checkov.yaml` and `**/*.tfvars` so
+changes to the checkov config or environment var files re-trigger the plan job.
+
+### Fixed — infracost `continue-on-error` (`3f464a8`)
+`terraform-ci.yml`: `cost estimate` job now has `continue-on-error: true`, preventing the
+missing `INFRACOST_API_KEY` secret from marking the entire CI run as failed.
+
+### Fixed — full stderr capture in probe (`9512007`)
+All three workflow files: `head -1 "$err_file"` replaced with
+`tr '\n' ' ' < "$err_file" | cut -c1-400` so the complete multi-line `az` CLI error is
+captured in probe log lines and the final `::error::` annotation. This revealed the actual
+failure message ("blocked by network rules") that was previously truncated to blank.
+
+### Fixed — IPv4 forcing (`98cf536`, superseded by PR #18)
+All three workflow files: added `sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1` and
+`curl -4` before IP detection to force IPv4. Resolved run `26127298691` (1m6s, ✓) but proved
+unreliable across runner allocations — fully superseded by the `defaultAction` toggle in PR #18.
+
+### Verified — PR #17, run `26127298691`
+- `terraform plan`: ✓ in 1m6s
+- All other checks green; `cost estimate` non-blocking fail (expected — no API key)
+
+---
+
+## 791e4fb — 2026-05-19 — `docs`: add `final-code-review.md`
+
+### Added
+- `docs/final-code-review.md`: automated code review against commit `e9698d6` on `main`.
+  Documents six test suites (terraform fmt, validate, tflint, checkov local, CI security
+  workflow `26117001627`, CI apply `26114963018`) — all passing. Nine findings (F-01–F-09):
+  two checkov false positives (now suppressed in PR #17), operational hardening tasks (HTTPS
+  enablement, image pinning, disk tier), and informational items. All prior HIGH/MEDIUM
+  vulnerabilities from the original `code-review.md` confirmed resolved.
+
+---
+
+## e9698d6 — 2026-05-19 — `fix(oidc)`: correct federated credential subjects — all envs + script default
 
 ### Problem
 `plan (dev)` (and `apply (dev)`) failed with `az` exit code 1 — OIDC
@@ -40,7 +119,7 @@ instead of `environment:dev-apply`, leaving that job with no valid match.
 - `plan (dev)`: ✓ in 47s — `Plan: 0 to add, 1 to change, 0 to destroy.`
 - `apply (dev)`: ✓ in 1m26s — `Apply complete! Resources: 0 added, 1 changed, 0 destroyed.`
 
-## (pending) — 2026-05-19 — `fix(dev)`: switch VMs from `Standard_B2s_v2` → `Standard_D2als_v7` (quota exhausted)
+## 105e733 — 2026-05-19 — `fix(dev)`: switch VMs from `Standard_B2s_v2` → `Standard_D2als_v7` (quota exhausted)
 
 ### Fixed
 - `environments/dev.tfvars`: `web_vm_size` and `app_vm_size` changed from
@@ -84,7 +163,7 @@ sql_server_fqdn                = hubspkd-sql-zdltzn.database.windows.net
 bastion_dns_name               = bst-e679b46d-ddd5-4174-87d8-1abcab3bc36c.bastion.azure.com
 ```
 
-## (pending) — 2026-05-19 — `chore(deps)`: bump azurerm provider 3.117.1 → `~> 4.x` and clear deprecations
+## df1cffb — 2026-05-19 — `chore(deps)`: bump azurerm provider 3.117.1 → `~> 4.x` and clear deprecations
 
 ### Changed
 - `providers.tf` and all `modules/*/versions.tf` (5 files): version constraint
@@ -152,7 +231,7 @@ bastion_dns_name               = bst-e679b46d-ddd5-4174-87d8-1abcab3bc36c.bastio
 ### Changed
 - `.github/workflows/terraform-ci.yml` (1 ref): `setup-tflint@v4` → `@v6`.
 
-## (pending) — 2026-05-19 — `ci`: relax SA firewall probe streak 3 → 1
+## eab8537 — 2026-05-19 — `ci`: relax SA firewall probe streak 3 → 1
 
 ### Changed
 - `.github/workflows/terraform-apply.yml` (plan + apply jobs) and
