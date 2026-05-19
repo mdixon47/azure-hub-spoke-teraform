@@ -109,8 +109,9 @@ module "data" {
     module.networking.web_subnet_id,
     module.networking.app_subnet_id,
   ]
-  log_analytics_workspace_id = module.hub.log_analytics_workspace_id
-  enable_resource_locks      = var.enable_resource_locks
+  log_analytics_workspace_id         = module.hub.log_analytics_workspace_id
+  enable_resource_locks              = var.enable_resource_locks
+  blob_public_network_access_enabled = var.blob_public_network_access_enabled
 
   tags = var.tags
 }

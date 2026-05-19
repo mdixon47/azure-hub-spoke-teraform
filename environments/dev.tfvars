@@ -5,8 +5,8 @@
 
 prefix = "hubspkd"
 # westus2: validated SQL provisioning (eastus + eastus2 are blocked by
-# subscription policy with ProvisioningDisabled); Standard_B2s broadly
-# available; GZRS replication supported for StorageV2.
+# subscription policy with ProvisioningDisabled); GZRS replication
+# supported for StorageV2.
 location = "westus2"
 
 # Networking ------------------------------------------------------------------
@@ -14,8 +14,10 @@ hub_vnet_cidr   = "10.0.0.0/16"
 spoke_vnet_cidr = "10.1.0.0/16"
 
 # Compute sizing --------------------------------------------------------------
-web_vm_size = "Standard_B2s"
-app_vm_size = "Standard_B2s"
+# Standard_B2s is capacity-restricted in westus2 ("SkuNotAvailable"); B2ms
+# has no restrictions on this subscription.
+web_vm_size = "Standard_B2ms"
+app_vm_size = "Standard_B2ms"
 
 # Observability & lifecycle ---------------------------------------------------
 log_retention_days    = 30
@@ -29,6 +31,12 @@ enable_resource_locks = false
 enable_https                     = false
 kv_public_network_access_enabled = false
 kv_allowed_ip_ranges             = []
+
+# Storage --------------------------------------------------------------------
+# Dev-only: opens the blob SA public endpoint with default firewall Allow so
+# the hosted GitHub runner can create the `app-data` container during apply.
+# Tighten in staging/prod with a Private Endpoint or JIT firewall punch.
+blob_public_network_access_enabled = true
 
 vm_admin_username  = "azureuser"
 sql_admin_username = "sqladminuser"

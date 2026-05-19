@@ -74,6 +74,12 @@ variable "storage_replication_type" {
   }
 }
 
+variable "blob_public_network_access_enabled" {
+  description = "When true, opens the blob Storage Account public endpoint and sets its default firewall action to Allow so Terraform can create containers from a hosted CI runner. Use only in dev; production should keep this false and bootstrap via Private Endpoint or a JIT firewall punch."
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags."
   type        = map(string)

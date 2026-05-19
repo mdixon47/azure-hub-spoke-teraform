@@ -103,12 +103,12 @@ resource "azurerm_storage_account" "blob" {
   access_tier                     = "Hot"
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
-  public_network_access_enabled   = false
+  public_network_access_enabled   = var.blob_public_network_access_enabled
   shared_access_key_enabled       = true
   tags                            = var.tags
 
   network_rules {
-    default_action             = "Deny"
+    default_action             = var.blob_public_network_access_enabled ? "Allow" : "Deny"
     bypass                     = ["AzureServices"]
     virtual_network_subnet_ids = var.allowed_subnet_ids
   }

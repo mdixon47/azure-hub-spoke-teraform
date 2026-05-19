@@ -150,3 +150,13 @@ variable "kv_allowed_ip_ranges" {
   type        = list(string)
   default     = []
 }
+
+# ----------------------------------------------------------------------------
+# Storage (data module)
+# ----------------------------------------------------------------------------
+
+variable "blob_public_network_access_enabled" {
+  description = "Allow public network access (and Allow default firewall action) on the blob Storage Account. Required when Terraform creates blob containers from outside the VNet (e.g. hosted CI). Production should keep this false and bootstrap containers via Private Endpoint or a JIT firewall punch."
+  type        = bool
+  default     = false
+}
