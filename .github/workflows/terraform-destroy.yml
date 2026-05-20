@@ -87,11 +87,24 @@ jobs:
           TF_VAR_sql_admin_password: ${{ secrets.SQL_ADMIN_PASSWORD }}
           TF_VAR_vm_admin_ssh_public_key: ${{ secrets.VM_ADMIN_SSH_PUBLIC_KEY }}
         run: |
-          terraform destroy \
-            -input=false \
-            -no-color \
-            -auto-approve \
-            -var-file="environments/${{ inputs.environment }}.tfvars"
+          # Retry up to 3 times: Azure's control plane is eventually consistent
+          # and can return InUseSubnetCannotBeDeleted if NIC deprovisioning
+          # hasn't fully propagated by the time the subnet deletion is attempted.
+          # The state file is re-read each attempt so only remaining resources
+          # are retried.
+          for attempt in 1 2 3; do
+            if terraform destroy \
+                 -input=false \
+                 -no-color \
+                 -auto-approve \
+                 -var-file="environments/${{ inputs.environment }}.tfvars"; then
+              exit 0
+            fi
+            echo "terraform destroy attempt $attempt failed; waiting 30s before retry"
+            sleep 30
+          done
+          echo "::error::terraform destroy failed after 3 attempts"
+          exit 1
       - name: Restore state SA firewall
         if: always()
         run: |
