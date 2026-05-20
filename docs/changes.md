@@ -3,6 +3,67 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
+## (pending) — 2026-05-19 — `fix(ci)`: remove redundant infracost workflow job (PR #21)
+
+### Problem
+The `cost estimate` job in `terraform-ci.yml` failed on every PR with
+`INFRACOST_API_KEY is not set` (exit code 1). Although `continue-on-error: true`
+prevents it from blocking the run, it still shows as a red ✗ in the PR checks
+UI — noise that makes real failures harder to spot. The Infracost GitHub App
+already posts cost-estimate comments to PRs via its own OAuth token; the
+workflow job is completely redundant.
+
+### Fixed
+Removed the entire `infracost` job (all steps: `actions/checkout`,
+`infracost/actions/setup`, `infracost breakdown`, `infracost comment github`)
+from `.github/workflows/terraform-ci.yml`. Also removed the "Orphan cost
+estimate" open item from this file.
+
+---
+
+## 738d8dd — 2026-05-19 — `fix`: prevent `InUseSubnetCannotBeDeleted` on `terraform destroy` (PR #20)
+
+### Problem
+`terraform destroy` raced the deletion of spoke NICs against spoke subnet
+deletion, producing:
+
+```
+InUseSubnetCannotBeDeleted: Subnet web-subnet is in use by
+…/networkInterfaces/HUBSPKD-WEB-NIC/ipConfigurations/INTERNAL
+```
+
+**Root cause 1 — implicit cross-module dependency is resource-level only.**
+`module.spoke_compute` references subnet IDs from `module.networking`, giving
+Terraform resource-to-resource edges. On destroy, Terraform reverses those
+edges, but with `parallelism=10` it can begin subnet deletion at the same time
+as (or immediately after) NIC deletion rather than waiting for all
+`spoke_compute` resources to finish first.
+
+**Root cause 2 — Azure control-plane eventual consistency.** The NIC DELETE
+API returns 200 before the subnet's internal reference table is updated, so a
+subnet DELETE attempted within seconds of a successful NIC DELETE still sees
+the NIC as "in use".
+
+### Fixed
+
+**`main.tf`** — added `depends_on = [module.networking]` to `module.spoke_compute`:
+this creates an explicit module-level fence. On destroy Terraform now fully
+tears down every resource in `spoke_compute` (NICs, NSG associations, VMs)
+before touching any resource in `networking` (subnets, VNet, peering). Without
+the explicit fence Terraform's resource-level parallelism can race the two
+modules during the destroy phase.
+
+**`.github/workflows/terraform-destroy.yml`** — wrapped `terraform destroy` in
+a 3-attempt retry loop (30s between attempts). The state file is re-read each
+attempt so only remaining resources are retried. This absorbs Azure's eventual-
+consistency window if the NIC-to-subnet reference hasn't cleared before the
+first destroy attempt starts.
+
+### Verified — PR #20
+- `terraform plan` (CI): ✓ in 1m10s, no errors
+
+---
+
 ## 78bc418 — 2026-05-19 — `fix(ci)`: replace IP-probe SA firewall pattern with `defaultAction` toggle (PR #18)
 
 ### Problem
@@ -678,6 +739,3 @@ DevSecOps toolchain in CI:
     add `required_reviewers` to each `*-apply` env (1 reviewer is
     enough for solo-maintainer flow; 2 for prod with a second pair of
     eyes). Optionally add `wait_timer` (e.g., 5 min on `prod-apply`).
-- **Orphan `cost estimate` workflow job** — superseded by the Infracost
-  GitHub App (which already posts PR comments). Either delete the job
-  from `terraform-ci.yml` or set `INFRACOST_API_KEY` at repo scope.
