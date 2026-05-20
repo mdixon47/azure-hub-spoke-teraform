@@ -47,6 +47,16 @@ module "spoke_compute" {
   app_vm_size             = var.app_vm_size
 
   tags = var.tags
+
+  # Explicit module-level fence: ensures ALL networking resources (subnets,
+  # VNets, peering) are fully created before any spoke_compute resource is
+  # created, and — critically for destroy — ensures ALL spoke_compute
+  # resources (VMs, NICs, NSG associations) are fully destroyed before any
+  # networking resource (subnet deletion) begins. Without this explicit
+  # depends_on, Terraform's resource-level parallelism can race the NIC
+  # deletion against the subnet deletion, producing
+  # InUseSubnetCannotBeDeleted from Azure's control plane.
+  depends_on = [module.networking]
 }
 
 module "security" {
