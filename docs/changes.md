@@ -3,7 +3,7 @@
 Reverse-chronological log of notable changes to this repository. Entries are
 grouped by the commit on `main` that introduced them.
 
-## (pending) — 2026-05-19 — `fix(ci)`: remove redundant infracost workflow job (PR #21)
+## 337b19a — 2026-05-19 — `fix(ci)`: remove redundant infracost workflow job (PR #21)
 
 ### Problem
 The `cost estimate` job in `terraform-ci.yml` failed on every PR with
