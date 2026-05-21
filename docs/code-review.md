@@ -1,6 +1,6 @@
 # Code Review — Hub-Spoke Reference Architecture
 
-**Reviewer:** Augment Agent
+**Reviewer:** Malik Dixon
 **Date:** 2026-05-17
 **Scope:** All Terraform under repository root (`main.tf`, `providers.tf`, `variables.tf`, `outputs.tf`, `modules/*`)
 **Provider:** `hashicorp/azurerm ~> 3.100`
