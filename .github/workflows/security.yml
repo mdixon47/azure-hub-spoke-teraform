@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: bridgecrewio/checkov-action@v12
+      - uses: bridgecrewio/checkov-action@v12.3114.0
         with:
           directory: .
           framework: terraform
